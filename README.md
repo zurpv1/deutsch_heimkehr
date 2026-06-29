@@ -1,45 +1,39 @@
 # Deutsch Heimkehr
 
-Workbook-driven German course app.
+Workbook-driven German learning app.
 
-## Current structure
-
-```text
-Deutsch_Heimkehr/
-  index.html
-  css/
-    app.css
-  js/
-    app.js
-  lessons/
-    A1/
-      unit-1/
-  source/
-    xlsx/
-      A1/
-        unit-1/
-```
-
-## Current lesson format
-
-Lesson workbooks are still authored as `.xlsx` files. Put editable workbook sources in:
+## GitHub Pages structure
 
 ```text
-source/xlsx/A1/unit-1/
+index.html
+css/app.css
+js/app.js
+source/course.json
+source/xlsx/A1/unit-1/*.xlsx
 ```
 
-The current app can still load lesson workbooks using the browser folder picker.
+## How lessons load
 
-## Recommended next step
+The app reads `source/course.json`, then downloads the listed `.xlsx` lesson workbooks directly from the repository.
 
-Keep `.xlsx` as the authoring format for now. Later, add an export process:
+The `.xlsx` files remain the authoring format.
+
+## Adding a lesson
+
+1. Add the workbook to the correct folder, for example:
 
 ```text
-.xlsx -> .json
+source/xlsx/A1/unit-1/Deutsch_Heimkehr_A1_U1_L6_v1.0.xlsx
 ```
 
-Then the app can load lessons directly from GitHub Pages without needing the folder picker.
+2. Add that filename to `source/course.json`.
+
+3. Commit and push.
 
 ## GitHub Pages
 
-For GitHub Pages, place this project at the root of a repository and enable Pages from the repository settings.
+Use:
+
+- Source: Deploy from a branch
+- Branch: main
+- Folder: /root

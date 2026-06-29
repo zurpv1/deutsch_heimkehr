@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Deutsch Heimkehr.1</title>
-  <script src="jszip.min.js"></script>
+  <title>Deutsch Heimkehr v3.0</title>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
   <div class="app">
     <div id="setupHeader" class="header">
       <h1 id="pageTitle">Deutsch Heimkehr</h1>
-      <p class="subtitle">Interactive German lessons built from Excel workbooks.</p>
+      <p class="subtitle">Learn German one lesson at a time.</p>
       <div class="file-note">
-        Select a lesson workbook to begin. The app will guide you through Lesson, Vocabulary, Grammar, Dialogue, Practice, and Quiz.
+        Choose a unit, select a lesson, and begin learning.
       </div>
     </div>
 
@@ -33,18 +33,21 @@
           <p class="subtitle">Choose how you want to open your Deutsch Heimkehr lessons.</p>
 
           <div class="workflow-card primary">
-            <h3>📚 Lesson Library <span class="small">(Recommended)</span></h3>
-            <p>Browse all available lessons in a folder. Best for studying through the course in order.</p>
+            <h3>📚 Course Library</h3>
+            <p>Lessons load automatically from this GitHub repository.</p>
             <div class="file-note">
-              Recommended folder structure: <code>GermanCourseApp/A1/lessons</code>. Select the <strong>lessons</strong> folder to show available lesson workbooks.
+              Course source: <code>source/course.json</code>
             </div>
-            <div class="actions">
+
+            <!-- Hidden fallback controls retained for local testing/development. -->
+            <div class="actions hidden">
               <label style="display:inline-block;">
                 <button type="button" id="chooseFolderVisualBtn">Select Lessons Folder</button>
                 <input id="lessonFolderInput" type="file" accept=".xlsx" webkitdirectory multiple style="display:none;" />
               </label>
             </div>
-            <div id="libraryStatus" class="library-status">No lessons folder selected yet.</div>
+
+            <div id="libraryStatus" class="library-status">Loading course...</div>
             <div class="library-toolbar">
               <div id="libraryBreadcrumb" class="breadcrumb"></div>
               <button id="backToUnitsBtn" class="secondary hidden" type="button">← Back to Units</button>
@@ -55,8 +58,8 @@
           <div class="or-divider">OR</div>
 
           <div class="workflow-card">
-            <h3>📖 Open a Single Lesson</h3>
-            <p>Open one lesson workbook directly. Useful if someone emailed you a lesson, you downloaded one separately, or you are testing a new workbook.</p>
+            <h3>📖 Open a Single Lesson <span class="small">(Testing)</span></h3>
+            <p>Use this only for local testing or opening a workbook outside the course library.</p>
             <label for="xlsxFile">Lesson Workbook (.xlsx)</label>
             <input id="xlsxFile" type="file" accept=".xlsx" />
             <div class="actions"><button id="loadBtn">Select Lesson Workbook</button></div>
