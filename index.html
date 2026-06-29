@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Deutsch Heimkehr v3.0</title>
+  <title>Deutsch Heimkehr v3.1</title>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <link rel="stylesheet" href="css/app.css">
 </head>
@@ -12,9 +12,7 @@
     <div id="setupHeader" class="header">
       <h1 id="pageTitle">Deutsch Heimkehr</h1>
       <p class="subtitle">Learn German one lesson at a time.</p>
-      <div class="file-note">
-        Choose a unit, select a lesson, and begin learning.
-      </div>
+
     </div>
 
     <div id="quizHeader" class="header hidden">
@@ -29,15 +27,12 @@
     <div class="app-shell">
       <main>
         <div id="setupPanel" class="panel">
-          <h2>Lesson Library</h2>
-          <p class="subtitle">Choose how you want to open your Deutsch Heimkehr lessons.</p>
+          <h2>A1 Beginner</h2>
+          <p class="subtitle">Choose a unit to begin.</p>
 
           <div class="workflow-card primary">
-            <h3>📚 Course Library</h3>
-            <p>Lessons load automatically from this GitHub repository.</p>
-            <div class="file-note">
-              Course source: <code>source/course.json</code>
-            </div>
+            <h3>📚 Course</h3>
+            <p>Select a unit, then choose a lesson.</p>
 
             <!-- Hidden fallback controls retained for local testing/development. -->
             <div class="actions hidden">
@@ -54,18 +49,12 @@
             </div>
             <div id="lessonLibraryGrid" class="library-grid"></div>
           </div>
-
-          <div class="or-divider">OR</div>
-
-          <div class="workflow-card">
-            <h3>📖 Open a Single Lesson <span class="small">(Testing)</span></h3>
-            <p>Use this only for local testing or opening a workbook outside the course library.</p>
-            <label for="xlsxFile">Lesson Workbook (.xlsx)</label>
+          <div id="developerTools" class="hidden">
             <input id="xlsxFile" type="file" accept=".xlsx" />
-            <div class="actions"><button id="loadBtn">Select Lesson Workbook</button></div>
-            <p id="loadStatus" class="small">No lesson workbook selected yet.</p>
+            <button id="loadBtn">Select Lesson Workbook</button>
+            <p id="loadStatus" class="small"></p>
+            <div id="statsArea" class="small"></div>
           </div>
-          <div id="statsArea" class="small"></div>
 
           <div id="quizStartArea" class="hidden">
             <h2>Ready to Begin</h2>
@@ -74,7 +63,7 @@
               <button id="beginLessonBtn">Begin Lesson</button>
               <button id="quiz10Btn">Practice 10 Questions</button>
               <button id="quiz25Btn">Practice 25 Questions</button>
-              <button id="quizAllBtn">Start Lesson Quiz</button>
+              <button id="quizAllBtn">Start Knowledge Check</button>
             </div>
           </div>
         </div>
@@ -86,7 +75,7 @@
           <div class="actions">
             <button id="prevLessonBtn" class="light">Previous</button>
             <button id="nextLessonBtn">Next</button>
-            <button id="startQuizFromLessonBtn" class="secondary hidden">Start Quiz</button>
+            <button id="startQuizFromLessonBtn" class="secondary hidden">Start Knowledge Check</button>
           </div>
         </div>
 
@@ -163,7 +152,7 @@
       </aside>
     </div>
 
-    <footer class="app-footer">Deutsch Heimkehr | GitHub modular starter | June 2026</footer>
+    <footer class="app-footer">Deutsch Heimkehr • v3.1</footer>
   </div>
 
 <script src="js/app.js"></script>

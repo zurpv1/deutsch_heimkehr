@@ -1,8 +1,8 @@
 # Deutsch Heimkehr
 
-Workbook-driven German learning app.
+Deutsch Heimkehr is a workbook-driven German learning app hosted with GitHub Pages.
 
-## GitHub Pages structure
+## Structure
 
 ```text
 index.html
@@ -12,7 +12,7 @@ source/course.json
 source/xlsx/A1/unit-1/*.xlsx
 ```
 
-## How lessons load
+## Lesson loading
 
 The app reads `source/course.json`, then downloads the listed `.xlsx` lesson workbooks directly from the repository.
 
@@ -30,10 +30,6 @@ source/xlsx/A1/unit-1/Deutsch_Heimkehr_A1_U1_L6_v1.0.xlsx
 
 3. Commit and push.
 
-## GitHub Pages
+## Current release
 
-Use:
-
-- Source: Deploy from a branch
-- Branch: main
-- Folder: /root
+Deutsch Heimkehr v3.1
