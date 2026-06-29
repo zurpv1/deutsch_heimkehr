@@ -519,3 +519,20 @@
       .context { font-size: 22px; }
       .german-target { font-size: 20px; }
     }
+
+/* v3.1 student-facing cleanup */
+#developerTools {
+  display: none !important;
+}
+
+.workflow-card.primary {
+  margin-top: 10px;
+}
+
+.lesson-card-file {
+  font-style: italic;
+}
+
+.app-footer {
+  opacity: 0.85;
+}
