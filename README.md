@@ -32,4 +32,11 @@ source/xlsx/A1/unit-1/Deutsch_Heimkehr_A1_U1_L6_v1.0.xlsx
 
 ## Current release
 
-Deutsch Heimkehr v3.1
+Deutsch Heimkehr v3.1.1
+
+
+## Progress storage
+
+Learner progress is stored locally in the browser using `localStorage`.
+No login or server database is required.
+Progress is device/browser-specific and can be separated by learner name.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Deutsch Heimkehr v3.1</title>
+  <title>Deutsch Heimkehr v3.1.1</title>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <link rel="stylesheet" href="css/app.css">
 </head>
@@ -29,6 +29,17 @@
         <div id="setupPanel" class="panel">
           <h2>A1 Beginner</h2>
           <p class="subtitle">Choose a unit to begin.</p>
+
+
+          <div class="workflow-card learner-profile-card">
+            <h3>👤 Learner Profile</h3>
+            <p>Enter a name to keep progress separate on this device.</p>
+            <div class="profile-row">
+              <input id="learnerNameInput" type="text" maxlength="40" placeholder="Learner name" />
+              <button id="saveLearnerBtn" type="button" class="secondary">Save</button>
+            </div>
+            <p id="learnerStatus" class="small">Progress is saved in this browser.</p>
+          </div>
 
           <div class="workflow-card primary">
             <h3>📚 Course</h3>
@@ -115,7 +126,7 @@
 
         <div id="resultsPanel" class="panel hidden">
           <div id="resultsLessonNav" class="lesson-nav"></div>
-          <h2 style="margin-top:18px;">Lesson Results</h2>
+          <h2 style="margin-top:18px;">Knowledge Check Results</h2>
           <div id="finalScore" class="summary-score"></div>
           <p id="finalSummary"></p>
 
@@ -125,8 +136,8 @@
             <div id="safetyDetails"></div>
             <p>Have you edited this workbook in Excel since loading it? If yes, cancel and reload the workbook before saving results.</p>
             <div class="actions">
-              <button id="confirmDownloadBtn">Download Updated Workbook</button>
-              <button id="cancelDownloadBtn" class="light">Cancel</button>
+              
+              
             </div>
           </div>
 
@@ -152,7 +163,7 @@
       </aside>
     </div>
 
-    <footer class="app-footer">Deutsch Heimkehr • v3.1</footer>
+    <footer class="app-footer">Deutsch Heimkehr • v3.1.1</footer>
   </div>
 
 <script src="js/app.js"></script>
