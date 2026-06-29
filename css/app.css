@@ -536,3 +536,35 @@
 .app-footer {
   opacity: 0.85;
 }
+
+
+/* v3.1.1 learner profiles and local progress */
+.learner-profile-card {
+  border-color: rgba(255,255,255,0.16);
+}
+
+.profile-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.progress-badge {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(251,181,43,0.45);
+  background: rgba(251,181,43,0.10);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+@media (max-width: 650px) {
+  .profile-row {
+    grid-template-columns: 1fr;
+  }
+}
