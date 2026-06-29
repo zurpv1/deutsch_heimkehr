@@ -74,8 +74,10 @@ document.getElementById("quiz10Btn").addEventListener("click", () => startQuiz(1
 document.getElementById("quiz25Btn").addEventListener("click", () => startQuiz(25));
 document.getElementById("quizAllBtn").addEventListener("click", () => startQuiz(allQuestions.length));
 document.getElementById("beginLessonBtn").addEventListener("click", beginLessonFlow);
-chooseFolderVisualBtn.addEventListener("click", () => lessonFolderInput.click());
-lessonFolderInput.addEventListener("change", buildLessonLibraryFromFolder);
+if(chooseFolderVisualBtn && lessonFolderInput){
+  chooseFolderVisualBtn.addEventListener("click", () => lessonFolderInput.click());
+  lessonFolderInput.addEventListener("change", buildLessonLibraryFromFolder);
+}
 backToUnitsBtn.addEventListener("click", renderUnitLibrary);
 
 function normalize(value){ return String(value || "").trim().toLowerCase(); }
@@ -280,6 +282,93 @@ loadBtn.addEventListener("click", async () => {
 
 
 
+
+async function loadCourseManifest(){
+  lessonLibrary = [];
+  selectedLibraryIndex = -1;
+  lessonLibraryGrid.innerHTML = "";
+  libraryStatus.textContent = "Loading course...";
+
+  try{
+    const response = await fetch("source/course.json", { cache: "no-store" });
+    if(!response.ok) throw new Error("source/course.json was not found.");
+
+    const manifest = await response.json();
+    const items = [];
+
+    (manifest.courses || []).forEach(course => {
+      (course.units || []).forEach(unit => {
+        const unitPath = unit.path || "";
+        (unit.lessons || []).forEach(lesson => {
+          if(typeof lesson === "string"){
+            items.push({
+              level: course.level || "",
+              unit: String(unit.unit || ""),
+              unitTitle: unit.title || "",
+              fileName: lesson,
+              url: unitPath ? `${unitPath}/${lesson}` : lesson
+            });
+          } else {
+            const fileName = lesson.file || lesson.fileName || lesson.path || "";
+            items.push({
+              level: lesson.level || course.level || "",
+              unit: String(lesson.unit || unit.unit || ""),
+              lessonNumber: lesson.lesson || lesson.lessonNumber || "",
+              unitTitle: unit.title || "",
+              title: lesson.title || "",
+              subtitle: lesson.subtitle || lesson.description || "",
+              fileName,
+              url: lesson.path || (unitPath ? `${unitPath}/${fileName}` : fileName)
+            });
+          }
+        });
+      });
+    });
+
+    if(!items.length){
+      libraryStatus.textContent = "No lessons are listed in source/course.json.";
+      return;
+    }
+
+    libraryStatus.textContent = `Loading ${items.length} lesson(s)...`;
+
+    for(const item of items){
+      try{
+        const lessonResponse = await fetch(item.url, { cache: "no-store" });
+        if(!lessonResponse.ok) throw new Error(`Could not download ${item.url}`);
+        const buffer = await lessonResponse.arrayBuffer();
+        const pseudoFile = { name: item.fileName || item.url.split("/").pop(), lastModified: Date.now() };
+        const summary = await readWorkbookSummary(buffer.slice(0), pseudoFile);
+
+        if(item.level) summary.level = item.level;
+        if(item.unit) summary.unit = item.unit;
+        if(item.lessonNumber) summary.lesson = String(item.lessonNumber);
+        if(item.title) summary.title = item.title;
+        if(item.subtitle) summary.subtitle = item.subtitle;
+        if(item.unitTitle) summary.unitTitle = item.unitTitle;
+
+        lessonLibrary.push({
+          url: item.url,
+          fileName: pseudoFile.name,
+          file: pseudoFile,
+          buffer,
+          summary
+        });
+      }catch(lessonError){
+        console.warn("Skipping unavailable lesson:", item.url, lessonError);
+      }
+    }
+
+    lessonLibrary.sort((a,b) => naturalLessonSort(a.summary, b.summary));
+    renderLessonLibrary();
+  }catch(err){
+    console.warn("Could not load course manifest.", err);
+    libraryStatus.textContent = "Course library could not load. You can still open a single lesson workbook below.";
+    libraryBreadcrumb.textContent = "";
+  }
+}
+
+
 async function buildLessonLibraryFromFolder(){
   const files = Array.from(lessonFolderInput.files || []).filter(f => {
   const n = f.name;
@@ -443,9 +532,9 @@ function getUnitGroups(){
     const unit = s.unit || "1";
     const key = `${level}|${unit}`;
     if(!map.has(key)){
-      map.set(key, { level, unit, lessons: [] });
+      map.set(key, { level, unit, unitTitle: s.unitTitle || "", lessons: [] });
     }
-    map.get(key).lessons.push({ entry, idx });
+    const group = map.get(key); if(!group.unitTitle && s.unitTitle) group.unitTitle = s.unitTitle; group.lessons.push({ entry, idx });
   });
 
   return Array.from(map.values()).sort((a,b) => {
@@ -494,7 +583,7 @@ function renderUnitLibrary(){
     const card = document.createElement("div");
     card.className = "lesson-library-card";
     card.title = "Click to view lessons.";
-    const title = unitTitle(group.level, group.unit);
+    const title = group.unitTitle || unitTitle(group.level, group.unit);
     const lessonCount = group.lessons.length;
     const rangeText = lessonCount === 1
       ? `Lesson ${first.lesson || ""}`
@@ -522,7 +611,7 @@ function renderLessonsForUnit(level, unit){
     .filter(x => (x.entry.summary.level || "Course") === level && String(x.entry.summary.unit || "1") === String(unit))
     .sort((a,b) => Number(a.entry.summary.lesson || 0) - Number(b.entry.summary.lesson || 0));
 
-  const title = unitTitle(level, unit);
+  const title = (lessons[0]?.entry?.summary?.unitTitle) || unitTitle(level, unit);
   libraryStatus.textContent = `${lessons.length} lesson(s) available. Click a lesson tile to begin.`;
   libraryBreadcrumb.textContent = `${level} • Unit ${unit} - ${title}`;
 
@@ -542,7 +631,7 @@ function renderLessonsForUnit(level, unit){
       <div class="lesson-card-meta">${escapeHtml(meta)}</div>
       ${s.subtitle ? `<div class="lesson-card-desc">${escapeHtml(s.subtitle)}</div>` : ""}
       <div class="lesson-card-meta">${escapeHtml([s.vocab ? s.vocab + " vocabulary" : "", s.questions ? s.questions + " questions" : ""].filter(Boolean).join(" • "))}</div>
-      <div class="lesson-card-file">${escapeHtml(entry.file.webkitRelativePath || entry.file.name)}</div>
+      <div class="lesson-card-file">${escapeHtml(entry.file?.webkitRelativePath || entry.file?.name || entry.url || "")}</div>
     `;
     card.addEventListener("click", async () => {
       await loadLessonFromLibrary(idx);
@@ -558,17 +647,30 @@ function renderLessonLibrary(){
 
 async function loadLessonFromLibrary(index){
   selectedLibraryIndex = index;
-  renderLessonLibrary();
   const entry = lessonLibrary[index];
   try{
-    workbookFileName = entry.file.name;
+    workbookFileName = entry.file?.name || entry.fileName || entry.url || "Lesson workbook";
     currentLessonSummary = entry.summary;
     workbookLoadedAt = new Date();
-    workbookLastModified = new Date(entry.file.lastModified);
+    workbookLastModified = entry.file?.lastModified ? new Date(entry.file.lastModified) : new Date();
+
     loadStatus.textContent = "Opening selected lesson...";
-    const buffer = await entry.file.arrayBuffer();
+    let buffer;
+    if(entry.buffer){
+      buffer = entry.buffer.slice(0);
+    } else if(entry.url){
+      const response = await fetch(entry.url, { cache: "no-store" });
+      if(!response.ok) throw new Error(`Could not download lesson: ${entry.url}`);
+      buffer = await response.arrayBuffer();
+      entry.buffer = buffer.slice(0);
+    } else if(entry.file && entry.file.arrayBuffer){
+      buffer = await entry.file.arrayBuffer();
+    } else {
+      throw new Error("Lesson entry does not contain a file or URL.");
+    }
+
     await parseWorkbook(buffer);
-    loadStatus.textContent = `Selected lesson: ${entry.summary.title || entry.file.name}`;
+    loadStatus.textContent = `Selected lesson: ${entry.summary?.title || workbookFileName}`;
     quizStartArea.classList.remove("hidden");
   }catch(e){
     console.error(e);
@@ -1285,4 +1387,11 @@ function showRetryResults(){
   results = originalResults;
   quizQuestions = originalQuizQuestions;
   retryMode = false;
+}
+
+// GitHub Pages / web mode: load course manifest automatically.
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", loadCourseManifest);
+} else {
+  loadCourseManifest();
 }
