@@ -283,6 +283,101 @@ if(loadBtn){ loadBtn.addEventListener("click", async () => {
 
 
 
+
+const DH_PROGRESS_PREFIX = "deutschHeimkehr.progress.";
+let learnerName = localStorage.getItem("deutschHeimkehr.activeLearner") || "Guest";
+
+function sanitizeLearnerName(name){
+  return String(name || "").trim().replace(/\s+/g, " ").slice(0, 40) || "Guest";
+}
+
+function progressKey(){
+  return DH_PROGRESS_PREFIX + learnerName.toLowerCase();
+}
+
+function getProgress(){
+  try{
+    return JSON.parse(localStorage.getItem(progressKey()) || "{}");
+  }catch(e){
+    return {};
+  }
+}
+
+function saveProgress(progress){
+  localStorage.setItem(progressKey(), JSON.stringify(progress || {}));
+}
+
+function lessonProgressId(summary){
+  const s = summary || currentLessonSummary || {};
+  const level = s.level || inferFromFilename(workbookFileName || "", "A") || "A1";
+  const unit = s.unit || inferFromFilename(workbookFileName || "", "U") || "1";
+  const lesson = s.lesson || inferFromFilename(workbookFileName || "", "L") || "1";
+  return `${level}-U${unit}-L${lesson}`;
+}
+
+function updateLearnerUI(){
+  if(learnerNameInput) learnerNameInput.value = learnerName === "Guest" ? "" : learnerName;
+  if(learnerStatus){
+    learnerStatus.textContent = learnerName === "Guest"
+      ? "Using Guest profile. Enter a name to keep progress separate on this device."
+      : `Progress is being saved for ${learnerName} on this device.`;
+  }
+}
+
+function setLearnerName(){
+  learnerName = sanitizeLearnerName(learnerNameInput ? learnerNameInput.value : learnerName);
+  localStorage.setItem("deutschHeimkehr.activeLearner", learnerName);
+  updateLearnerUI();
+  renderLessonLibrary();
+}
+
+function saveCurrentLessonResult(){
+  if(!currentLessonSummary || !quizQuestions || !quizQuestions.length) return;
+
+  const progress = getProgress();
+  const id = lessonProgressId(currentLessonSummary);
+  const total = quizQuestions.length;
+  const percent = total ? Math.round((score / total) * 100) : 0;
+  const previous = progress[id] || {};
+
+  progress[id] = {
+    level: currentLessonSummary.level || "",
+    unit: currentLessonSummary.unit || "",
+    lesson: currentLessonSummary.lesson || "",
+    title: currentLessonSummary.title || workbookFileName || "",
+    attempts: (previous.attempts || 0) + 1,
+    lastScore: score,
+    lastTotal: total,
+    lastPercent: percent,
+    bestPercent: Math.max(previous.bestPercent || 0, percent),
+    completed: percent >= 70 || previous.completed || false,
+    updatedAt: new Date().toISOString()
+  };
+
+  saveProgress(progress);
+}
+
+function progressBadgeFor(summary){
+  const progress = getProgress();
+  const record = progress[lessonProgressId(summary)];
+  if(!record) return "";
+  if(record.completed){
+    return `<div class="progress-badge">✓ Completed • Best ${record.bestPercent}%</div>`;
+  }
+  return `<div class="progress-badge">In progress • Best ${record.bestPercent || record.lastPercent || 0}%</div>`;
+}
+
+if(saveLearnerBtn){
+  saveLearnerBtn.addEventListener("click", setLearnerName);
+}
+if(learnerNameInput){
+  learnerNameInput.addEventListener("keydown", (e) => {
+    if(e.key === "Enter") setLearnerName();
+  });
+}
+updateLearnerUI();
+
+
 async function loadCourseManifest(){
   lessonLibrary = [];
   selectedLibraryIndex = -1;
@@ -631,6 +726,7 @@ function renderLessonsForUnit(level, unit){
       <div class="lesson-card-meta">${escapeHtml(meta)}</div>
       ${s.subtitle ? `<div class="lesson-card-desc">${escapeHtml(s.subtitle)}</div>` : ""}
       <div class="lesson-card-meta">${escapeHtml([s.vocab ? s.vocab + " vocabulary" : "", s.questions ? s.questions + " questions" : ""].filter(Boolean).join(" • "))}</div>
+      ${progressBadgeFor(s)}
       <div class="lesson-card-file">Click to begin this lesson.</div>
     `;
     card.addEventListener("click", async () => {
@@ -1224,6 +1320,7 @@ function getResultMessage(percent){
 
 function showResults(){
   progressBar.style.width = "100%";
+  saveCurrentLessonResult();
   quizPanel.classList.add("hidden");
   resultsPanel.classList.remove("hidden");
   renderResultsNav();
