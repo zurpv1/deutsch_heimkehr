@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deutsch Heimkehr.1</title>
+  <script src="jszip.min.js"></script>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="app">
+    <div id="setupHeader" class="header">
+      <h1 id="pageTitle">Deutsch Heimkehr</h1>
+      <p class="subtitle">Interactive German lessons built from Excel workbooks.</p>
+      <div class="file-note">
+        Select a lesson workbook to begin. The app will guide you through Lesson, Vocabulary, Grammar, Dialogue, Practice, and Quiz.
+      </div>
+    </div>
+
+    <div id="quizHeader" class="header hidden">
+      <div class="top-course-nav">
+        <button id="courseHomeBtn" class="course-home-btn" type="button">🏠 Course</button>
+        <div id="currentLessonLabel" class="current-lesson-label"></div>
+      </div>
+      <h1 id="quizHeaderTitle">Deutsch Heimkehr</h1>
+      <p class="subtitle">Learn German one lesson at a time.</p>
+    </div>
+
+    <div class="app-shell">
+      <main>
+        <div id="setupPanel" class="panel">
+          <h2>Lesson Library</h2>
+          <p class="subtitle">Choose how you want to open your Deutsch Heimkehr lessons.</p>
+
+          <div class="workflow-card primary">
+            <h3>📚 Lesson Library <span class="small">(Recommended)</span></h3>
+            <p>Browse all available lessons in a folder. Best for studying through the course in order.</p>
+            <div class="file-note">
+              Recommended folder structure: <code>GermanCourseApp/A1/lessons</code>. Select the <strong>lessons</strong> folder to show available lesson workbooks.
+            </div>
+            <div class="actions">
+              <label style="display:inline-block;">
+                <button type="button" id="chooseFolderVisualBtn">Select Lessons Folder</button>
+                <input id="lessonFolderInput" type="file" accept=".xlsx" webkitdirectory multiple style="display:none;" />
+              </label>
+            </div>
+            <div id="libraryStatus" class="library-status">No lessons folder selected yet.</div>
+            <div class="library-toolbar">
+              <div id="libraryBreadcrumb" class="breadcrumb"></div>
+              <button id="backToUnitsBtn" class="secondary hidden" type="button">← Back to Units</button>
+            </div>
+            <div id="lessonLibraryGrid" class="library-grid"></div>
+          </div>
+
+          <div class="or-divider">OR</div>
+
+          <div class="workflow-card">
+            <h3>📖 Open a Single Lesson</h3>
+            <p>Open one lesson workbook directly. Useful if someone emailed you a lesson, you downloaded one separately, or you are testing a new workbook.</p>
+            <label for="xlsxFile">Lesson Workbook (.xlsx)</label>
+            <input id="xlsxFile" type="file" accept=".xlsx" />
+            <div class="actions"><button id="loadBtn">Select Lesson Workbook</button></div>
+            <p id="loadStatus" class="small">No lesson workbook selected yet.</p>
+          </div>
+          <div id="statsArea" class="small"></div>
+
+          <div id="quizStartArea" class="hidden">
+            <h2>Ready to Begin</h2>
+            <p id="questionCountText"></p>
+            <div class="quick-buttons">
+              <button id="beginLessonBtn">Begin Lesson</button>
+              <button id="quiz10Btn">Practice 10 Questions</button>
+              <button id="quiz25Btn">Practice 25 Questions</button>
+              <button id="quizAllBtn">Start Lesson Quiz</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="lessonPanel" class="panel hidden">
+          <h2 id="lessonSectionTitle">Mission</h2>
+          <div id="lessonNav" class="lesson-nav"></div>
+          <div id="lessonContent" class="lesson-content" style="margin-top:18px;"></div>
+          <div class="actions">
+            <button id="prevLessonBtn" class="light">Previous</button>
+            <button id="nextLessonBtn">Next</button>
+            <button id="startQuizFromLessonBtn" class="secondary hidden">Start Quiz</button>
+          </div>
+        </div>
+
+        <div id="quizPanel" class="panel hidden">
+          <div id="quizLessonNav" class="lesson-nav"></div>
+          <div class="status-row" style="margin-top:18px;"><div id="progressText"></div><div id="scoreText">Score: 0</div></div>
+          <div class="progress-shell"><div id="progressBar" class="progress-bar"></div></div>
+
+          <div class="question-card">
+            <div id="promptLabel" class="prompt-label"></div>
+            <div id="contextText" class="context"></div>
+            <div id="taskText" class="task"></div>
+            <div id="targetText" class="german-target hidden"></div>
+          </div>
+
+          <div id="choicesArea" class="choices"></div>
+
+          <div id="fibArea" class="fib-area hidden">
+            <label for="fibInput">Deine Antwort / Your Answer</label>
+            <input id="fibInput" type="text" autocomplete="off" />
+            <div class="german-keys">
+              <button type="button" class="key-btn" data-symbol="ä">ä</button>
+              <button type="button" class="key-btn" data-symbol="ö">ö</button>
+              <button type="button" class="key-btn" data-symbol="ü">ü</button>
+              <button type="button" class="key-btn" data-symbol="ß">ß</button>
+            </div>
+          </div>
+
+          <div id="feedback" class="feedback"></div>
+
+          <div class="actions">
+            <button id="checkBtn">Check Answer</button>
+            <button id="nextBtn" class="secondary hidden">Next Question</button>
+            <button id="quitBtn" class="light">End Practice</button>
+          </div>
+        </div>
+
+        <div id="resultsPanel" class="panel hidden">
+          <div id="resultsLessonNav" class="lesson-nav"></div>
+          <h2 style="margin-top:18px;">Lesson Results</h2>
+          <div id="finalScore" class="summary-score"></div>
+          <p id="finalSummary"></p>
+
+          <div id="downloadStatus" class="file-note hidden"></div>
+          <div id="safetyBox" class="file-note hidden">
+            <h3 style="margin-top:0;color:#fbb52b;">⚠ Workbook Safety Check</h3>
+            <div id="safetyDetails"></div>
+            <p>Have you edited this workbook in Excel since loading it? If yes, cancel and reload the workbook before saving results.</p>
+            <div class="actions">
+              <button id="confirmDownloadBtn">Download Updated Workbook</button>
+              <button id="cancelDownloadBtn" class="light">Cancel</button>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="returnCourseBtn">Return to Course</button>
+            <button id="restartBtn" class="secondary">Start Again</button>
+            <button id="missedBtn" class="secondary">Review Missed Questions</button>
+            <button id="retryMissedBtn" class="secondary">Retry Missed Questions</button>
+          </div>
+          <div id="reviewArea"></div>
+        </div>
+      </main>
+
+      <aside class="side-panel">
+        <h3>Lesson Dashboard</h3>
+        <div class="stat-row"><span>Questions</span><strong id="dashTotal">0</strong></div>
+        <div class="stat-row"><span>Correct</span><strong id="dashCorrect">0</strong></div>
+        <div class="stat-row"><span>Incorrect</span><strong id="dashIncorrect">0</strong></div>
+        <div class="stat-row"><span>Accuracy</span><strong id="dashScore">0%</strong></div>
+        <h3 style="margin-top:18px;">Question Map</h3>
+        <div id="questionMap" class="legend-grid"></div>
+        <p class="small">Gold = current, green = correct, red = incorrect.</p>
+      </aside>
+    </div>
+
+    <footer class="app-footer">Deutsch Heimkehr | GitHub modular starter | June 2026</footer>
+  </div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

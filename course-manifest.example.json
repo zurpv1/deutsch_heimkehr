@@ -1,0 +1,16 @@
+{
+  "course": "Deutsch Heimkehr",
+  "levels": [
+    {
+      "level": "A1",
+      "title": "Beginner German",
+      "units": [
+        {
+          "unit": 1,
+          "title": "Getting Started",
+          "path": "source/xlsx/A1/unit-1"
+        }
+      ]
+    }
+  ]
+}
