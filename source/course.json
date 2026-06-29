@@ -1,0 +1,23 @@
+{
+  "course": "Deutsch Heimkehr",
+  "courses": [
+    {
+      "level": "A1",
+      "title": "Beginner German",
+      "units": [
+        {
+          "unit": 1,
+          "title": "Getting Started",
+          "path": "source/xlsx/A1/unit-1",
+          "lessons": [
+            "Deutsch_Heimkehr_A1_U1_L1_v1.0.xlsx",
+            "Deutsch_Heimkehr_A1_U1_L2_v1.0.xlsx",
+            "Deutsch_Heimkehr_A1_U1_L3_v1.0.xlsx",
+            "Deutsch_Heimkehr_A1_U1_L4_v1.0.xlsx",
+            "Deutsch_Heimkehr_A1_U1_L5_v1.0.xlsx"
+          ]
+        }
+      ]
+    }
+  ]
+}
