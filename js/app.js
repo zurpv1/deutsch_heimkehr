@@ -263,7 +263,7 @@ function updateStats(){
   statsArea.innerHTML = `<div class="file-note"><strong>Previous Results</strong><br>Attempts: ${historical.length}<br>Last Attempt: ${last.QuestionCount} questions — ${last.Score}/${last.Total} (${last.Percent}%)<br>Best Attempt: ${best.QuestionCount} questions — ${best.Score}/${best.Total} (${best.Percent}%)<br>Average: ${avg}%</div>`;
 }
 
-loadBtn.addEventListener("click", async () => {
+if(loadBtn){ loadBtn.addEventListener("click", async () => {
   const file = xlsxFile.files[0];
   if(!file){ loadStatus.textContent = "Please choose a workbook first."; return; }
   try{
@@ -287,7 +287,7 @@ async function loadCourseManifest(){
   lessonLibrary = [];
   selectedLibraryIndex = -1;
   lessonLibraryGrid.innerHTML = "";
-  libraryStatus.textContent = "Loading course...";
+  libraryStatus.textContent = "Loading course…";
 
   try{
     const response = await fetch("source/course.json", { cache: "no-store" });
@@ -326,7 +326,7 @@ async function loadCourseManifest(){
     });
 
     if(!items.length){
-      libraryStatus.textContent = "No lessons are listed in source/course.json.";
+      libraryStatus.textContent = "No lessons are available yet.";
       return;
     }
 
@@ -363,7 +363,7 @@ async function loadCourseManifest(){
     renderLessonLibrary();
   }catch(err){
     console.warn("Could not load course manifest.", err);
-    libraryStatus.textContent = "Course library could not load. You can still open a single lesson workbook below.";
+    libraryStatus.textContent = "Course could not load. Please refresh the page.";
     libraryBreadcrumb.textContent = "";
   }
 }
@@ -574,7 +574,7 @@ function renderUnitLibrary(){
   }
 
   const levels = [...new Set(groups.map(g => g.level).filter(Boolean))];
-  libraryStatus.textContent = `${groups.length} unit(s) available. Click a unit tile to view its lessons.`;
+  libraryStatus.textContent = `${groups.length} unit(s) available. Choose a unit to begin.`;
   libraryBreadcrumb.textContent = levels.length === 1 ? `${levels[0]} Course` : "Course Library";
 
   groups.forEach(group => {
@@ -592,7 +592,7 @@ function renderUnitLibrary(){
       <div class="unit-card-title">${escapeHtml(group.level ? group.level + " • Unit " + group.unit : "Unit " + group.unit)}</div>
       <div class="lesson-card-meta">${escapeHtml(title)}</div>
       <div class="unit-card-desc">${escapeHtml(rangeText)} • ${lessonCount} lesson${lessonCount === 1 ? "" : "s"}</div>
-      <div class="lesson-card-file">Click to open this unit.</div>
+      <div class="lesson-card-file">Click to view this unit.</div>
     `;
     card.addEventListener("click", () => renderLessonsForUnit(group.level, group.unit));
     lessonLibraryGrid.appendChild(card);
@@ -612,7 +612,7 @@ function renderLessonsForUnit(level, unit){
     .sort((a,b) => Number(a.entry.summary.lesson || 0) - Number(b.entry.summary.lesson || 0));
 
   const title = (lessons[0]?.entry?.summary?.unitTitle) || unitTitle(level, unit);
-  libraryStatus.textContent = `${lessons.length} lesson(s) available. Click a lesson tile to begin.`;
+  libraryStatus.textContent = `${lessons.length} lesson(s) available. Choose a lesson to begin.`;
   libraryBreadcrumb.textContent = `${level} • Unit ${unit} - ${title}`;
 
   lessons.forEach(({entry, idx}) => {
@@ -631,7 +631,7 @@ function renderLessonsForUnit(level, unit){
       <div class="lesson-card-meta">${escapeHtml(meta)}</div>
       ${s.subtitle ? `<div class="lesson-card-desc">${escapeHtml(s.subtitle)}</div>` : ""}
       <div class="lesson-card-meta">${escapeHtml([s.vocab ? s.vocab + " vocabulary" : "", s.questions ? s.questions + " questions" : ""].filter(Boolean).join(" • "))}</div>
-      <div class="lesson-card-file">${escapeHtml(entry.file?.webkitRelativePath || entry.file?.name || entry.url || "")}</div>
+      <div class="lesson-card-file">Click to begin this lesson.</div>
     `;
     card.addEventListener("click", async () => {
       await loadLessonFromLibrary(idx);
@@ -751,7 +751,7 @@ function renderLessonNav(){
 
   const quizItem = document.createElement("span");
   quizItem.className = "lesson-step";
-  quizItem.textContent = "Quiz";
+  quizItem.textContent = "Knowledge Check";
   quizItem.addEventListener("click", () => startQuiz(allQuestions.length));
   lessonNav.appendChild(quizItem);
 }
@@ -809,7 +809,7 @@ function renderQuizNav(){
 
   const quizItem = document.createElement("span");
   quizItem.className = "lesson-step active";
-  quizItem.textContent = "Quiz";
+  quizItem.textContent = "Knowledge Check";
   quizLessonNav.appendChild(quizItem);
 }
 
@@ -1290,7 +1290,7 @@ async function downloadUpdatedWorkbook(){
   downloadStatus.innerHTML = "Results download started.<br><br><strong>Save over:</strong> " + escapeHtml(workbookFileName);
 }
 
-confirmDownloadBtn.addEventListener("click", async () => {
+confirmDownif(loadBtn){ loadBtn.addEventListener("click", async () => {
   hideWorkbookSafetyBox();
   downloadStatus.innerHTML = "Starting results download...";
   await downloadUpdatedWorkbook();
