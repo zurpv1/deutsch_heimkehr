@@ -328,6 +328,11 @@ function setLearnerName(){
   learnerName = sanitizeLearnerName(learnerNameInput ? learnerNameInput.value : learnerName);
   localStorage.setItem("deutschHeimkehr.activeLearner", learnerName);
   updateLearnerUI();
+  if(learnerStatus){
+    learnerStatus.textContent = learnerName === "Guest"
+      ? "Saved. Using Guest profile on this device."
+      : `Saved. Progress is being saved for ${learnerName} on this device.`;
+  }
   renderLessonLibrary();
 }
 
@@ -458,7 +463,7 @@ async function loadCourseManifest(){
     renderLessonLibrary();
   }catch(err){
     console.warn("Could not load course manifest.", err);
-    libraryStatus.textContent = "Course could not load. Please refresh the page.";
+    libraryStatus.textContent = "Course could not load. Make sure source/course.json and the lesson workbook files are uploaded to GitHub.";
     libraryBreadcrumb.textContent = "";
   }
 }
