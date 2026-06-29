@@ -544,11 +544,20 @@
 }
 
 .profile-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: stretch;
   margin-top: 10px;
+}
+
+.profile-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.profile-row button {
+  flex: 0 0 auto;
+  min-height: 44px;
 }
 
 .progress-badge {
@@ -565,6 +574,10 @@
 
 @media (max-width: 650px) {
   .profile-row {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .profile-row button {
+    align-self: flex-start;
   }
 }
