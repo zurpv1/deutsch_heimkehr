@@ -191,6 +191,55 @@
               "status": "coming-soon"
             }
           ]
+        },
+        {
+          "unit": "5",
+          "title": "Transportation & Getting Around",
+          "subtitle": "Use trains, buses, directions, and travel-help phrases confidently.",
+          "path": "source/xlsx/A1/unit-5",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Transportation Basics",
+              "subtitle": "Ask where stations, stops, restrooms, and key places are.",
+              "file": "Deutsch_Heimkehr_A1_U5_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Trains & Stations",
+              "subtitle": "Read station information and ask about platforms and trains.",
+              "file": "Deutsch_Heimkehr_A1_U5_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Buses, Trams & Local Transit",
+              "subtitle": "Use local transit, stops, lines, and day tickets.",
+              "file": "Deutsch_Heimkehr_A1_U5_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Asking for Directions",
+              "subtitle": "Ask how to get somewhere and understand simple directions.",
+              "file": "Deutsch_Heimkehr_A1_U5_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Tickets, Delays & Travel Help",
+              "subtitle": "Ask for help with tickets, delays, cancellations, and connections.",
+              "file": "Deutsch_Heimkehr_A1_U5_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 5 Review",
+              "subtitle": "Coming soon",
+              "status": "coming-soon"
+            }
+          ]
         }
       ]
     },
