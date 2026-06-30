@@ -422,6 +422,24 @@ async function loadCourseManifest(){
       });
     });
 
+    (courseManifest.courses || []).forEach(course => {
+    if (!course.finalReview) return;
+
+    const review = course.finalReview;
+
+    items.push({
+        level: course.level || "",
+        unit: "review",
+        lessonNumber: "review",
+        unitTitle: "Comprehensive Review",
+        title: review.title || "Final Review",
+        subtitle: review.subtitle || "",
+        fileName: review.file,
+        url: `${review.path}/${review.file}`,
+        isFinalReview: true
+    });
+});
+    
     if(items.length){
       libraryStatus.textContent = `Loading ${items.length} lesson(s)...`;
     }
