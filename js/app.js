@@ -136,37 +136,23 @@ async function parseWorkbook(arrayBuffer){
     relMap[id] = target.startsWith("xl/") ? target : "xl/" + target;
   });
 
-  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({
-    name: attr(s,"name") || "",
-    id: attr(s,"r:id") || attr(s,"id")
-  }));
+  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({ name: attr(s,"name") || "", id: attr(s,"r:id") || attr(s,"id") }));
+  const sharedStrings = await loadSharedStrings(parser);
 
-  const qSheet = sheets.find(s => s.name.toLowerCase() === "questions");
   const isFinalReviewWorkbook =
     !!(currentLessonSummary && currentLessonSummary.isFinalReview) ||
     /final[_\s-]*review/i.test(workbookFileName || "");
 
-  if(!qSheet && !isFinalReviewWorkbook){
-    throw new Error("Workbook must contain a Questions sheet.");
-  }
-
-  const sharedStrings = await loadSharedStrings(parser);
-  resultsSheetPath = "";
   dynamicLessonSections = null;
+  resultsSheetPath = "";
 
   if(isFinalReviewWorkbook){
-    // Final review workbooks are capstone workbooks with custom sheet names.
-    // Load every visible content sheet and display it dynamically.
     lessonData = {};
     dynamicLessonSections = [];
 
     for(const sheetInfo of sheets){
       const sheetName = sheetInfo.name || "";
-      const lower = sheetName.toLowerCase();
-
-      // Results can still be shown as a regular content sheet if present.
-      if(!relMap[sheetInfo.id]) continue;
-
+      if(!sheetName || !relMap[sheetInfo.id]) continue;
       lessonData[sheetName] = await readSheetRows(parser, relMap[sheetInfo.id], sharedStrings);
       dynamicLessonSections.push(sheetName);
     }
@@ -176,6 +162,7 @@ async function parseWorkbook(arrayBuffer){
     pageTitle.textContent = quizTitle;
     quizHeaderTitle.textContent = quizTitle;
     document.title = quizTitle;
+
     loadStatus.textContent = `Opened ${workbookFileName}.`;
     questionCountText.textContent = "This workbook is a comprehensive review. Use the workbook sections to study and assess your A1 skills.";
     quizStartArea.classList.add("hidden");
@@ -184,9 +171,13 @@ async function parseWorkbook(arrayBuffer){
     return;
   }
 
+  lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
+
+  const qSheet = sheets.find(s => s.name.toLowerCase() === "questions");
+  if(!qSheet) throw new Error("Workbook must contain a Questions sheet.");
+
   const questionsSheetPath = relMap[qSheet.id];
 
-  lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
   const lessonSheet = sheets.find(s => s.name.toLowerCase() === "lesson") || sheets.find(s => s.name.toLowerCase() === "mission");
   if(lessonSheet && relMap[lessonSheet.id]){
     lessonData.Lesson = await readSheetRows(parser, relMap[lessonSheet.id], sharedStrings);
@@ -465,10 +456,10 @@ async function loadCourseManifest(){
         });
       });
 
-      if(course.finalReview){
-        const review = course.finalReview;
+      const review = course.finalReview;
+      if(review && review.status !== "coming-soon"){
         const fileName = review.file || review.fileName || "";
-        if(fileName && review.status !== "coming-soon"){
+        if(fileName){
           items.push({
             level: course.level || "",
             unit: "final",
@@ -502,14 +493,7 @@ async function loadCourseManifest(){
         if(item.title) summary.title = item.title;
         if(item.subtitle) summary.subtitle = item.subtitle;
         if(item.unitTitle) summary.unitTitle = item.unitTitle;
-        if(item.isFinalReview){
-          summary.isFinalReview = true;
-          summary.level = item.level || summary.level;
-          summary.unit = "final";
-          summary.lesson = "final";
-          summary.title = item.title || summary.title;
-          summary.subtitle = item.subtitle || summary.subtitle;
-        }
+        if(item.isFinalReview) summary.isFinalReview = true;
 
         lessonLibrary.push({
           url: item.url,
@@ -780,7 +764,7 @@ function renderLevelLibrary(){
     card.innerHTML = `
       <div class="unit-card-title">${escapeHtml(course.title || course.level || "Level")}</div>
       <div class="lesson-card-desc">${escapeHtml(course.subtitle || "")}</div>
-      <div class="unit-card-desc">${comingSoon ? "Coming soon" : `${units.length} unit${units.length === 1 ? "" : "s"} • ${actualLessons} available workbook${actualLessons === 1 ? "" : "s"}`}</div>
+      <div class="unit-card-desc">${comingSoon ? "Coming soon" : `${units.length} unit${units.length === 1 ? "" : "s"} • ${actualLessons} available lesson${actualLessons === 1 ? "" : "s"}`}</div>
       <div class="lesson-card-file">${comingSoon ? "Not available yet." : "Click to view this level."}</div>
     `;
     if(!comingSoon){
@@ -869,7 +853,7 @@ function renderLessonsForUnit(level, unit){
 
   const title = unitObj?.title || unitTitle(level, unit);
   const availableCount = planned.filter(x => x.available).length;
-  libraryStatus.textContent = `${availableCount} workbook(s) available. Choose any available workbook.`;
+  libraryStatus.textContent = `${availableCount} lesson(s) available. Choose any available lesson.`;
   libraryBreadcrumb.textContent = `${level} • Unit ${unit} - ${title}`;
 
   if(!planned.length){
@@ -966,6 +950,7 @@ function updateCourseHeader(){
 }
 
 function showCourseHome(){
+  dynamicLessonSections = null;
   quizPanel.classList.add("hidden");
   lessonPanel.classList.add("hidden");
   resultsPanel.classList.add("hidden");
@@ -997,6 +982,7 @@ function beginLessonFlow(){
 
 function renderLessonNav(){
   lessonNav.innerHTML = "";
+  const activeSections = dynamicLessonSections || lessonSections;
 
   const courseItem = document.createElement("span");
   courseItem.className = "lesson-step course-step";
@@ -1004,7 +990,7 @@ function renderLessonNav(){
   courseItem.addEventListener("click", showCourseHome);
   lessonNav.appendChild(courseItem);
 
-  (dynamicLessonSections || lessonSections).forEach((section, idx) => {
+  activeSections.forEach((section, idx) => {
     const item = document.createElement("span");
     item.className = "lesson-step" + (idx === currentLessonSectionIndex ? " active" : "");
     item.textContent = section;
@@ -1024,15 +1010,19 @@ function renderLessonNav(){
   }
 }
 
+
 function renderResultsNav(){
   if(!resultsLessonNav) return;
   resultsLessonNav.innerHTML = "";
+  const activeSections = dynamicLessonSections || lessonSections;
+
   const courseItem = document.createElement("span");
   courseItem.className = "lesson-step course-step";
   courseItem.textContent = "🏠 Course";
   courseItem.addEventListener("click", showCourseHome);
   resultsLessonNav.appendChild(courseItem);
-  (dynamicLessonSections || lessonSections).forEach((section, idx) => {
+
+  activeSections.forEach((section, idx) => {
     const item = document.createElement("span");
     item.className = "lesson-step";
     item.textContent = section;
@@ -1045,15 +1035,18 @@ function renderResultsNav(){
     });
     resultsLessonNav.appendChild(item);
   });
+
   const resultsItem = document.createElement("span");
   resultsItem.className = "lesson-step active";
   resultsItem.textContent = "Results";
   resultsLessonNav.appendChild(resultsItem);
 }
 
+
 function renderQuizNav(){
   if(!quizLessonNav) return;
   quizLessonNav.innerHTML = "";
+  const activeSections = dynamicLessonSections || lessonSections;
 
   const courseItem = document.createElement("span");
   courseItem.className = "lesson-step course-step";
@@ -1061,7 +1054,7 @@ function renderQuizNav(){
   courseItem.addEventListener("click", showCourseHome);
   quizLessonNav.appendChild(courseItem);
 
-  (dynamicLessonSections || lessonSections).forEach((section, idx) => {
+  activeSections.forEach((section, idx) => {
     const item = document.createElement("span");
     item.className = "lesson-step";
     item.textContent = section;
@@ -1080,6 +1073,7 @@ function renderQuizNav(){
   quizItem.textContent = "Knowledge Check";
   quizLessonNav.appendChild(quizItem);
 }
+
 
 function renderLessonSection(){
   const activeSections = dynamicLessonSections || lessonSections;
@@ -1100,6 +1094,7 @@ function renderLessonSection(){
   nextLessonBtn.classList.toggle("hidden", currentLessonSectionIndex === activeSections.length - 1);
   startQuizFromLessonBtn.classList.toggle("hidden", currentLessonSectionIndex !== activeSections.length - 1 || !allQuestions.length);
 }
+
 
 function renderLesson(rows){
   if(!rows.length){
