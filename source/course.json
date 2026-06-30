@@ -99,7 +99,7 @@
               "file": "Deutsch_Heimkehr_A1_U2_Review_v1.0.xlsx",
               "status": "available"
             }
-                      ]
+          ]
         },
         {
           "unit": "3",
@@ -244,9 +244,16 @@
               "file": "Deutsch_Heimkehr_A1_U5_Review_v1.0.xlsx",
               "status": "available"
             }
-          ]
+          ]        
         }
-      ]
+      ],
+      "finalReview": {
+        "title": "A1 Comprehensive Review & Assessment",
+        "subtitle": "Review everything from A1 and prepare for A2.",
+        "path": "source/xlsx/A1",
+        "file": "Deutsch_Heimkehr_A1_Final_Review.xlsx",
+        "status": "available"
+      }
     },
     {
       "level": "A2",
