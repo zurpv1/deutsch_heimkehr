@@ -250,16 +250,32 @@ async function readSheetRows(parser, path, sharedStrings){
 
 function loadQuestionsFromRows(rows){
   if(!rows || rows.length < 2) throw new Error("Questions sheet does not contain expected rows.");
-  if(normalize(rows[0][0]) === "title") quizTitle = rows[0][1] || "Deutsch Heimkehr";
-  pageTitle.textContent = quizTitle; quizHeaderTitle.textContent = quizTitle; document.title = quizTitle;
 
-  const headerRowIndex = rows.findIndex(r => normalize(r[0]) === "id");
-  if(headerRowIndex < 0) throw new Error("Questions sheet must have an ID header row.");
+  if(normalize(rows[0][0]) === "title") quizTitle = rows[0][1] || "Deutsch Heimkehr";
+  pageTitle.textContent = quizTitle; 
+  quizHeaderTitle.textContent = quizTitle; 
+  document.title = quizTitle;
+
+  let headerRowIndex = rows.findIndex(r => normalize(r[0]) === "id");
+
+  // Final review support:
+  // Some capstone workbooks use a compact Questions sheet beginning with:
+  // Type | Question | Choice1 | Choice2 | Choice3 | Choice4 | Answer | Explanation
+  // If no ID header exists, accept that format and generate IDs automatically.
+  if(headerRowIndex < 0){
+    headerRowIndex = rows.findIndex(r => normalize(r[0]) === "type" && normalize(r[1]) === "question");
+  }
+
+  if(headerRowIndex < 0) throw new Error("Questions sheet must have either an ID header row or a Type/Question header row.");
+
   const headers = rows[headerRowIndex].map(h => String(h || "").trim());
 
-  allQuestions = rows.slice(headerRowIndex + 1).map(row => {
+  allQuestions = rows.slice(headerRowIndex + 1).map((row, rowOffset) => {
     const obj = {};
     headers.forEach((h,i) => obj[h] = row[i] !== undefined && row[i] !== null ? String(row[i]).trim() : "");
+
+    if(!obj.ID) obj.ID = String(rowOffset + 1);
+
     return normalizeLoadedQuestion(obj);
   }).filter(q => q.ID && q.Type && (q.Question || q.Exercise || q.Phrase || q.Instruction || q.Target) && q.Answer !== "");
 
@@ -284,11 +300,11 @@ function normalizeLoadedQuestion(q){
     q.Exercise = q.Question;
   }
 
-  // Support old A/B/C/D headers and old ChoiceA/ChoiceB/etc.
-  q.ChoiceA = q.ChoiceA || q.A || "";
-  q.ChoiceB = q.ChoiceB || q.B || "";
-  q.ChoiceC = q.ChoiceC || q.C || "";
-  q.ChoiceD = q.ChoiceD || q.D || "";
+  // Support A/B/C/D, ChoiceA/ChoiceB, and compact Choice1/Choice2 formats.
+  q.ChoiceA = q.ChoiceA || q.Choice1 || q.A || "";
+  q.ChoiceB = q.ChoiceB || q.Choice2 || q.B || "";
+  q.ChoiceC = q.ChoiceC || q.Choice3 || q.C || "";
+  q.ChoiceD = q.ChoiceD || q.Choice4 || q.D || "";
 
   if(q.Type === "TF"){
     const key = String(q.Answer || "").trim().toUpperCase();
