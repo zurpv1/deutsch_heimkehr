@@ -103,6 +103,55 @@
               "status": "coming-soon"
             }
           ]
+        },
+        {
+          "unit": "3",
+          "title": "Time & Everyday Planning",
+          "subtitle": "Use numbers, prices, time, dates, addresses, forms, and simple plans.",
+          "path": "source/xlsx/A1/unit-3",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Lesson 1",
+              "subtitle": "Numbers, Prices & Money",
+              "file": "Deutsch_Heimkehr_A1_U3_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Lesson 2",
+              "subtitle": "Time & Opening Hours",
+              "file": "Deutsch_Heimkehr_A1_U3_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Lesson 3",
+              "subtitle": "Days, Months & Dates",
+              "file": "Deutsch_Heimkehr_A1_U3_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Lesson 4",
+              "subtitle": "Addresses & German Forms",
+              "file": "Deutsch_Heimkehr_A1_U3_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Lesson 5",
+              "subtitle": "Planning Your Day",
+              "file": "Deutsch_Heimkehr_A1_U3_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 3 Review",
+              "subtitle": "Coming soon",
+              "status": "coming-soon"
+            }
+          ]
         }
       ]
     },
