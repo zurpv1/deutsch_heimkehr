@@ -416,30 +416,31 @@ async function loadCourseManifest(){
             title: lessonObj.title || "",
             subtitle: lessonObj.subtitle || lessonObj.description || "",
             fileName,
-            url: lessonObj.path || (unitPath ? `${unitPath}/${fileName}` : fileName)
+            url: lessonObj.path || (unitPath ? `${unitPath}/${fileName}` : fileName),
+            isFinalReview: false
           });
         });
       });
+
+      // Course-level final review / capstone workbook.
+      // This is separate from the unit lesson loop so it can appear as its own tile.
+      const finalReview = course.finalReview || null;
+      const finalFileName = finalReview ? (finalReview.file || finalReview.fileName || "") : "";
+      if(finalReview && finalFileName && finalReview.status !== "coming-soon"){
+        items.push({
+          level: course.level || "",
+          unit: "final",
+          lessonNumber: "review",
+          unitTitle: "Comprehensive Review",
+          title: finalReview.title || `${course.level || "Course"} Comprehensive Review`,
+          subtitle: finalReview.subtitle || "",
+          fileName: finalFileName,
+          url: finalReview.path ? `${finalReview.path}/${finalFileName}` : finalFileName,
+          isFinalReview: true
+        });
+      }
     });
 
-    (courseManifest.courses || []).forEach(course => {
-    if (!course.finalReview) return;
-
-    const review = course.finalReview;
-
-    items.push({
-        level: course.level || "",
-        unit: "review",
-        lessonNumber: "review",
-        unitTitle: "Comprehensive Review",
-        title: review.title || "Final Review",
-        subtitle: review.subtitle || "",
-        fileName: review.file,
-        url: `${review.path}/${review.file}`,
-        isFinalReview: true
-    });
-});
-    
     if(items.length){
       libraryStatus.textContent = `Loading ${items.length} lesson(s)...`;
     }
@@ -458,6 +459,7 @@ async function loadCourseManifest(){
         if(item.title) summary.title = item.title;
         if(item.subtitle) summary.subtitle = item.subtitle;
         if(item.unitTitle) summary.unitTitle = item.unitTitle;
+        if(item.isFinalReview) summary.isFinalReview = true;
 
         lessonLibrary.push({
           url: item.url,
@@ -649,6 +651,15 @@ function getAvailableLessonEntry(level, unit, lesson){
     ) || null;
 }
 
+function getAvailableFinalReviewEntry(level){
+  return lessonLibrary
+    .map((entry, idx) => ({ entry, idx }))
+    .find(x =>
+      String(x.entry.summary.level || "Course") === String(level || "") &&
+      x.entry.summary.isFinalReview
+    ) || null;
+}
+
 function getUnitGroups(levelFilter){
   const groups = [];
   const courses = levelFilter ? [getCourseByLevel(levelFilter)].filter(Boolean) : (courseManifest.courses || []);
@@ -764,6 +775,41 @@ function renderUnitLibrary(level){
     card.addEventListener("click", () => renderLessonsForUnit(group.level, group.unit));
     lessonLibraryGrid.appendChild(card);
   });
+
+  renderFinalReviewTile(course);
+}
+
+function renderFinalReviewTile(course){
+  if(!course || !course.finalReview) return;
+
+  const review = course.finalReview;
+  const available = getAvailableFinalReviewEntry(course.level);
+  const isAvailable = !!available && review.status !== "coming-soon";
+
+  const divider = document.createElement("div");
+  divider.className = "lesson-library-divider";
+  divider.innerHTML = `<span>Level Review</span>`;
+  lessonLibraryGrid.appendChild(divider);
+
+  const card = document.createElement("div");
+  card.className = "lesson-library-card final-review-card" + (!isAvailable ? " disabled" : "");
+  card.title = isAvailable ? "Click to begin the comprehensive review." : "Coming soon.";
+  card.innerHTML = `
+    <div class="unit-card-title">🎓 ${escapeHtml(review.title || course.level + " Comprehensive Review")}</div>
+    <div class="lesson-card-meta">${escapeHtml(course.level || "Course")} • Final Review</div>
+    ${review.subtitle ? `<div class="unit-card-desc">${escapeHtml(review.subtitle)}</div>` : ""}
+    ${isAvailable ? progressBadgeFor(available.entry.summary) : '<div class="coming-soon-badge">Coming soon</div>'}
+    <div class="lesson-card-file">${isAvailable ? "Click to begin the final review." : "This final review workbook has not been added yet."}</div>
+  `;
+
+  if(isAvailable){
+    card.addEventListener("click", async () => {
+      await loadLessonFromLibrary(available.idx);
+      beginLessonFlow();
+    });
+  }
+
+  lessonLibraryGrid.appendChild(card);
 }
 
 function renderLessonsForUnit(level, unit){
@@ -865,8 +911,12 @@ function getCurrentLessonDisplayName(){
   if(currentLessonSummary){
     const parts = [];
     if(currentLessonSummary.level) parts.push(currentLessonSummary.level);
-    if(currentLessonSummary.unit) parts.push(`Unit ${currentLessonSummary.unit}`);
-    if(currentLessonSummary.lesson) parts.push(`Lesson ${currentLessonSummary.lesson}`);
+    if(currentLessonSummary.isFinalReview){
+      parts.push("Final Review");
+    } else {
+      if(currentLessonSummary.unit) parts.push(`Unit ${currentLessonSummary.unit}`);
+      if(currentLessonSummary.lesson) parts.push(String(currentLessonSummary.lesson) === "review" ? "Review" : `Lesson ${currentLessonSummary.lesson}`);
+    }
     const prefix = parts.join(" • ");
     const title = currentLessonSummary.title || workbookFileName || "";
     return prefix ? `${prefix} - ${title}` : title;
