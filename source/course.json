@@ -240,8 +240,9 @@
             {
               "lesson": "review",
               "title": "Unit 5 Review",
-              "subtitle": "Coming soon",
-              "status": "coming-soon"
+              "subtitle": "Review transportation, stations, local transit, directions, tickets, delays, and travel help.",
+              "file": "Deutsch_Heimkehr_A1_U5_Review_v1.0.xlsx",
+              "status": "available"
             }
           ]
         }
