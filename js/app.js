@@ -442,7 +442,7 @@ async function loadCourseManifest(){
     });
 
     if(items.length){
-      libraryStatus.textContent = `Loading ${items.length} lesson(s)...`;
+      libraryStatus.textContent = `Loading ${items.length} workbook(s)...`;
     }
 
     for(const item of items){
@@ -650,6 +650,17 @@ function getAvailableLessonEntry(level, unit, lesson){
       String(x.entry.summary.lesson || "") === String(lesson || "")
     ) || null;
 }
+
+function getFinalReviewEntry(level){
+  return lessonLibrary
+    .map((entry, idx) => ({ entry, idx }))
+    .find(x =>
+      x.entry.summary &&
+      x.entry.summary.isFinalReview &&
+      String(x.entry.summary.level || "") === String(level || "")
+    ) || null;
+}
+
 
 function getAvailableFinalReviewEntry(level){
   return lessonLibrary
