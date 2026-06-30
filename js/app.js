@@ -64,8 +64,7 @@ const nextBtn = document.getElementById("nextBtn");
 const quitBtn = document.getElementById("quitBtn");
 const finalScore = document.getElementById("finalScore");
 const finalSummary = document.getElementById("finalSummary");
-const downloadStatus = document.getElementById("downloadStatus");
-const safetyBox = document.getElementById("safetyBox");
+const saveStatus = document.getElementById("saveStatus");
 const safetyDetails = document.getElementById("safetyDetails");
 const confirmDownloadBtn = document.getElementById("confirmDownloadBtn");
 const cancelDownloadBtn = document.getElementById("cancelDownloadBtn");
@@ -138,11 +137,10 @@ async function parseWorkbook(arrayBuffer){
 
   const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({ name: attr(s,"name") || "", id: attr(s,"r:id") || attr(s,"id") }));
   const qSheet = sheets.find(s => s.name.toLowerCase() === "questions");
-  const rSheet = sheets.find(s => s.name.toLowerCase() === "results");
-  if(!qSheet || !rSheet) throw new Error("Workbook must contain Questions and Results sheets.");
+  if(!qSheet) throw new Error("Workbook must contain a Questions sheet.");
 
   const questionsSheetPath = relMap[qSheet.id];
-  resultsSheetPath = relMap[rSheet.id];
+  resultsSheetPath = "";
   const sharedStrings = await loadSharedStrings(parser);
 
   lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
@@ -158,9 +156,9 @@ async function parseWorkbook(arrayBuffer){
   }
 
   const questionRows = await readSheetRows(parser, questionsSheetPath, sharedStrings);
-  const resultRows = await readSheetRows(parser, resultsSheetPath, sharedStrings);
   loadQuestionsFromRows(questionRows);
-  loadResultsFromRows(resultRows);
+  historical = [];
+  updateStats();
 
   if(!currentLessonSummary || currentLessonSummary.title === workbookFileName){
     const meta = lessonRowsToMetadata(lessonData.Lesson || []);
@@ -287,7 +285,7 @@ if(loadBtn){ loadBtn.addEventListener("click", async () => {
     await parseWorkbook(buffer);
   }catch(err){
     console.error(err);
-    loadStatus.textContent = "There was a problem reading the workbook. Make sure it has Questions and Results sheets.";
+    loadStatus.textContent = "There was a problem reading the lesson workbook. Make sure it has a Questions sheet.";
   }
 });
 }
@@ -332,7 +330,7 @@ function updateLearnerUI(){
   if(learnerStatus){
     learnerStatus.textContent = learnerName === "Guest"
       ? "Using Guest profile. Enter a name to keep progress separate on this device."
-      : `Progress is being saved for ${learnerName} on this device.`;
+      : `👋 Welcome back, ${learnerName}! Progress is saved in this browser.`;
   }
 }
 
@@ -1399,76 +1397,14 @@ function showResults(){
   const percent = total ? Math.round((score/total)*100) : 0;
   finalScore.textContent = `${score} / ${total} (${percent}%)`;
   finalSummary.textContent = getResultMessage(percent);
-  downloadStatus.classList.remove("hidden");
-  downloadStatus.innerHTML = "Practice finished.<br><br>Review the workbook safety check below before downloading your updated workbook.";
-  showWorkbookSafetyBox();
+  saveStatus.classList.remove("hidden");
+  saveStatus.innerHTML = learnerName === "Guest"
+    ? "Practice finished. Your progress was saved to the Guest profile in this browser."
+    : `Practice finished. Progress saved for ${escapeHtml(learnerName)} in this browser.`;
   reviewArea.innerHTML = "";
   updateDashboard();
 }
 
-function showWorkbookSafetyBox(){
-  const loadedAtText = workbookLoadedAt ? workbookLoadedAt.toLocaleString() : "unknown";
-  const modifiedText = workbookLastModified ? workbookLastModified.toLocaleString() : "unknown";
-  safetyDetails.innerHTML =
-    "<strong>Workbook:</strong><br>" + escapeHtml(workbookFileName) + "<br><br>" +
-    "<strong>Last Modified:</strong><br>" + escapeHtml(modifiedText) + "<br><br>" +
-    "<strong>Loaded:</strong><br>" + escapeHtml(loadedAtText);
-  safetyBox.classList.remove("hidden");
-}
-function hideWorkbookSafetyBox(){ safetyBox.classList.add("hidden"); }
-
-function makeResultRow(){
-  const total = results.length || quizQuestions.length;
-  const percent = total ? Math.round((score/total)*100) : 0;
-  return { Date:new Date().toISOString().split("T")[0], QuestionCount:selectedQuestionCount || total, Score:score, Total:total, Percent:percent };
-}
-
-function buildResultsSheetXml(resultRows){
-  const rows = [["Date","QuestionCount","Score","Total","Percent"], ...resultRows.map(r=>[r.Date,r.QuestionCount,r.Score,r.Total,r.Percent])];
-  let xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:E${rows.length}"/><sheetViews><sheetView workbookViewId="0"/></sheetViews><sheetFormatPr defaultRowHeight="15"/><sheetData>`;
-  rows.forEach((row, rIdx)=>{
-    const rn = rIdx+1;
-    xml += `<row r="${rn}">`;
-    row.forEach((val,cIdx)=>{
-      const col = String.fromCharCode(65+cIdx);
-      const ref = col+rn;
-      xml += `<c r="${ref}" t="inlineStr"><is><t>${xmlEscape(String(val ?? ""))}</t></is></c>`;
-    });
-    xml += `</row>`;
-  });
-  xml += `</sheetData></worksheet>`;
-  return xml;
-}
-
-async function downloadUpdatedWorkbook(){
-  if(currentResultSaved){ downloadStatus.textContent = "Results already downloaded for this attempt."; return; }
-  const newResult = makeResultRow();
-  const combined = [...historical, newResult];
-  workbookZip.file(resultsSheetPath, buildResultsSheetXml(combined));
-  const blob = await workbookZip.generateAsync({type:"blob"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = workbookFileName;
-  a.click();
-  historical = combined;
-  currentResultSaved = true;
-  updateStats();
-  downloadStatus.innerHTML = "Results download started.<br><br><strong>Save over:</strong> " + escapeHtml(workbookFileName);
-}
-
-if(confirmDownloadBtn){
-  confirmDownloadBtn.addEventListener("click", async () => {
-    hideWorkbookSafetyBox();
-    downloadStatus.innerHTML = "Starting results download...";
-    await downloadUpdatedWorkbook();
-  });
-}
-if(cancelDownloadBtn){
-  cancelDownloadBtn.addEventListener("click", () => {
-    hideWorkbookSafetyBox();
-    downloadStatus.innerHTML = "<strong>Download canceled.</strong><br><br>Reload the latest workbook if you edited it after loading it.";
-  });
-}
 
 restartBtn.addEventListener("click", () => {
   questionStates = [];
@@ -1479,8 +1415,7 @@ restartBtn.addEventListener("click", () => {
   quizHeader.classList.add("hidden");
   setupHeader.classList.remove("hidden");
   reviewArea.innerHTML = "";
-  downloadStatus.classList.add("hidden");
-  hideWorkbookSafetyBox();
+  saveStatus.classList.add("hidden");
   retryMode = false;
   retryQuestions = [];
   retryResults = [];
@@ -1543,8 +1478,7 @@ function showRetryResults(){
 
   finalScore.textContent = `Retry Round: ${retryScore} / ${total} (${percent}%)`;
   finalSummary.textContent = retryScore === total ? "Excellent. You corrected all missed questions." : "Review any questions still missed below.";
-  downloadStatus.classList.add("hidden");
-  hideWorkbookSafetyBox();
+  saveStatus.classList.add("hidden");
 
   const stillMissed = retryResults.filter(r => !r.correct);
   if(stillMissed.length === 0){
