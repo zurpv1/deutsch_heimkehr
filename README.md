@@ -1,42 +1,17 @@
-# Deutsch Heimkehr
+Deutsch Heimkehr v3.1.4
 
-Deutsch Heimkehr is a workbook-driven German learning app hosted with GitHub Pages.
+Upload these files to the GitHub Pages repository, replacing the existing files.
 
-## Structure
+Changes in v3.1.4:
+- Adds a level-first landing flow: A1, A2, B1, B2.
+- A1 opens to units, then Unit 1 opens to lessons.
+- Lesson 1 is available; Lessons 2-5 and Unit Review are shown as Coming Soon placeholders.
+- Removes the appearance of being forced directly into Lesson 1.
+- Keeps learner profile progress local to the browser/device.
 
-```text
+Expected structure:
 index.html
 css/app.css
 js/app.js
 source/course.json
-source/xlsx/A1/unit-1/*.xlsx
-```
-
-## Lesson loading
-
-The app reads `source/course.json`, then downloads the listed `.xlsx` lesson workbooks directly from the repository.
-
-The `.xlsx` files remain the authoring format.
-
-## Adding a lesson
-
-1. Add the workbook to the correct folder, for example:
-
-```text
-source/xlsx/A1/unit-1/Deutsch_Heimkehr_A1_U1_L6_v1.0.xlsx
-```
-
-2. Add that filename to `source/course.json`.
-
-3. Commit and push.
-
-## Current release
-
-Deutsch Heimkehr v3.1.3
-
-
-## Progress storage
-
-Learner progress is stored locally in the browser using `localStorage`.
-No login or server database is required.
-Progress is device/browser-specific and can be separated by learner name.
+source/xlsx/A1/unit-1/Deutsch_Heimkehr_A1_U1_L1_v1.0.xlsx
