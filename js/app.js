@@ -150,22 +150,35 @@ async function parseWorkbook(arrayBuffer){
     lessonData = {};
     dynamicLessonSections = [];
 
+    const qSheet = sheets.find(s => s.name.toLowerCase() === "questions");
+
     for(const sheetInfo of sheets){
       const sheetName = sheetInfo.name || "";
+      const lower = sheetName.toLowerCase();
       if(!sheetName || !relMap[sheetInfo.id]) continue;
+
+      // Do not display Questions as a normal workbook tab.
+      // It powers the interactive Knowledge Check instead.
+      if(lower === "questions") continue;
+
       lessonData[sheetName] = await readSheetRows(parser, relMap[sheetInfo.id], sharedStrings);
       dynamicLessonSections.push(sheetName);
     }
 
-    allQuestions = [];
-    quizTitle = currentLessonSummary?.title || "A1 Comprehensive Review & Assessment";
-    pageTitle.textContent = quizTitle;
-    quizHeaderTitle.textContent = quizTitle;
-    document.title = quizTitle;
+    if(qSheet && relMap[qSheet.id]){
+      const questionRows = await readSheetRows(parser, relMap[qSheet.id], sharedStrings);
+      loadQuestionsFromRows(questionRows);
+    } else {
+      allQuestions = [];
+      quizTitle = currentLessonSummary?.title || "A1 Comprehensive Review & Assessment";
+      pageTitle.textContent = quizTitle;
+      quizHeaderTitle.textContent = quizTitle;
+      document.title = quizTitle;
+      questionCountText.textContent = "No interactive assessment is available for this workbook.";
+      quizStartArea.classList.add("hidden");
+    }
 
     loadStatus.textContent = `Opened ${workbookFileName}.`;
-    questionCountText.textContent = "This workbook is a comprehensive review. Use the workbook sections to study and assess your A1 skills.";
-    quizStartArea.classList.add("hidden");
     historical = [];
     updateStats();
     return;
