@@ -12,6 +12,8 @@ let libraryView = "levels";
 let selectedLevel = "";
 let selectedUnit = "";
 let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
+  dynamicLessonSections = null;
+let dynamicLessonSections = null;
 
 const chooseFolderVisualBtn = document.getElementById("chooseFolderVisualBtn");
 const lessonFolderInput = document.getElementById("lessonFolderInput");
@@ -137,9 +139,25 @@ async function parseWorkbook(arrayBuffer){
 
   const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({ name: attr(s,"name") || "", id: attr(s,"r:id") || attr(s,"id") }));
   const qSheet = sheets.find(s => s.name.toLowerCase() === "questions");
-  if(!qSheet) throw new Error("Workbook must contain a Questions sheet.");
+  const isFinalReviewWorkbook = currentLessonSummary && currentLessonSummary.isFinalReview;
 
-  const questionsSheetPath = relMap[qSheet.id];
+  if(isFinalReviewWorkbook){
+    dynamicLessonSections = [];
+    lessonData = {};
+    for(const sheetInfo of sheets){
+      const sheetName = sheetInfo.name || "";
+      const lower = sheetName.toLowerCase();
+      if(lower === "questions" || lower === "results") continue;
+      if(relMap[sheetInfo.id]){
+        lessonData[sheetName] = await readSheetRows(parser, relMap[sheetInfo.id], sharedStrings);
+        dynamicLessonSections.push(sheetName);
+      }
+    }
+  }
+
+  if(!qSheet && !isFinalReviewWorkbook) throw new Error("Workbook must contain a Questions sheet.");
+
+  const questionsSheetPath = qSheet ? relMap[qSheet.id] : "";
   resultsSheetPath = "";
   const sharedStrings = await loadSharedStrings(parser);
 
@@ -155,8 +173,14 @@ async function parseWorkbook(arrayBuffer){
     }
   }
 
-  const questionRows = await readSheetRows(parser, questionsSheetPath, sharedStrings);
-  loadQuestionsFromRows(questionRows);
+  if(questionsSheetPath){
+    const questionRows = await readSheetRows(parser, questionsSheetPath, sharedStrings);
+    loadQuestionsFromRows(questionRows);
+  } else {
+    allQuestions = [];
+    questionCountText.textContent = "No knowledge check is available for this workbook.";
+    quizStartArea.classList.add("hidden");
+  }
   historical = [];
   updateStats();
 
@@ -514,8 +538,8 @@ async function buildLessonLibraryFromFolder(){
 }
 
 function naturalLessonSort(a,b){
-  const av = [a.level || "", Number(a.unit || 0), Number(a.lesson || 0), a.title || ""].join("-");
-  const bv = [b.level || "", Number(b.unit || 0), Number(b.lesson || 0), b.title || ""].join("-");
+  const av = [a.level || "", a.isFinalReview ? 999 : Number(a.unit || 0), a.isFinalReview ? 999 : Number(a.lesson || 0), a.title || ""].join("-");
+  const bv = [b.level || "", b.isFinalReview ? 999 : Number(b.unit || 0), b.isFinalReview ? 999 : Number(b.lesson || 0), b.title || ""].join("-");
   return av.localeCompare(bv, undefined, { numeric:true });
 }
 
@@ -799,7 +823,7 @@ function renderFinalReviewTile(course){
 
   const divider = document.createElement("div");
   divider.className = "lesson-library-divider";
-  divider.innerHTML = `<span>Level Review</span>`;
+  divider.innerHTML = `<span></span>`;
   lessonLibraryGrid.appendChild(divider);
 
   const card = document.createElement("div");
@@ -980,7 +1004,7 @@ function renderLessonNav(){
   courseItem.addEventListener("click", showCourseHome);
   lessonNav.appendChild(courseItem);
 
-  lessonSections.forEach((section, idx) => {
+  (dynamicLessonSections || lessonSections).forEach((section, idx) => {
     const item = document.createElement("span");
     item.className = "lesson-step" + (idx === currentLessonSectionIndex ? " active" : "");
     item.textContent = section;
@@ -991,11 +1015,13 @@ function renderLessonNav(){
     lessonNav.appendChild(item);
   });
 
-  const quizItem = document.createElement("span");
-  quizItem.className = "lesson-step";
-  quizItem.textContent = "Knowledge Check";
-  quizItem.addEventListener("click", () => startQuiz(allQuestions.length));
-  lessonNav.appendChild(quizItem);
+  if(allQuestions && allQuestions.length){
+    const quizItem = document.createElement("span");
+    quizItem.className = "lesson-step";
+    quizItem.textContent = "Knowledge Check";
+    quizItem.addEventListener("click", () => startQuiz(allQuestions.length));
+    lessonNav.appendChild(quizItem);
+  }
 }
 
 function renderResultsNav(){
@@ -1006,7 +1032,7 @@ function renderResultsNav(){
   courseItem.textContent = "🏠 Course";
   courseItem.addEventListener("click", showCourseHome);
   resultsLessonNav.appendChild(courseItem);
-  lessonSections.forEach((section, idx) => {
+  (dynamicLessonSections || lessonSections).forEach((section, idx) => {
     const item = document.createElement("span");
     item.className = "lesson-step";
     item.textContent = section;
@@ -1035,7 +1061,7 @@ function renderQuizNav(){
   courseItem.addEventListener("click", showCourseHome);
   quizLessonNav.appendChild(courseItem);
 
-  lessonSections.forEach((section, idx) => {
+  (dynamicLessonSections || lessonSections).forEach((section, idx) => {
     const item = document.createElement("span");
     item.className = "lesson-step";
     item.textContent = section;
@@ -1056,7 +1082,8 @@ function renderQuizNav(){
 }
 
 function renderLessonSection(){
-  const section = lessonSections[currentLessonSectionIndex];
+  const activeSections = dynamicLessonSections || lessonSections;
+  const section = activeSections[currentLessonSectionIndex];
   lessonSectionTitle.textContent = section === "Mission" ? "Lesson" : section;
   renderLessonNav();
   lessonContent.innerHTML = "";
@@ -1067,10 +1094,12 @@ function renderLessonSection(){
   else if(section === "Grammar") renderGenericTable(rows);
   else if(section === "Dialogue") renderDialogue(rows);
   else if(section === "Practice") renderGenericTable(rows);
+  else renderGenericTable(rows);
 
+  const activeSections2 = dynamicLessonSections || lessonSections;
   prevLessonBtn.disabled = currentLessonSectionIndex === 0;
-  nextLessonBtn.classList.toggle("hidden", currentLessonSectionIndex === lessonSections.length - 1);
-  startQuizFromLessonBtn.classList.toggle("hidden", currentLessonSectionIndex !== lessonSections.length - 1);
+  nextLessonBtn.classList.toggle("hidden", currentLessonSectionIndex === activeSections2.length - 1);
+  startQuizFromLessonBtn.classList.toggle("hidden", currentLessonSectionIndex !== activeSections2.length - 1 || !allQuestions.length);
 }
 
 function renderLesson(rows){
@@ -1084,7 +1113,9 @@ function renderLesson(rows){
     const body = row.slice(1).filter(Boolean).join("\\n");
     const card = document.createElement("div");
     card.className = "lesson-card";
-    card.innerHTML = `<h3>${escapeHtml(title)}</h3><p>${escapeHtml(body)}</p>`;
+    card.innerHTML = body
+      ? `<h3>${escapeHtml(title)}</h3><p>${escapeHtml(body)}</p>`
+      : `<p>${escapeHtml(title)}</p>`;
     lessonContent.appendChild(card);
   });
 }
@@ -1166,7 +1197,7 @@ prevLessonBtn.addEventListener("click", () => {
 });
 
 nextLessonBtn.addEventListener("click", () => {
-  if(currentLessonSectionIndex < lessonSections.length - 1){
+  if(currentLessonSectionIndex < (dynamicLessonSections || lessonSections).length - 1){
     currentLessonSectionIndex++;
     renderLessonSection();
   }
