@@ -11,6 +11,16 @@ let libraryView = "units";
 let selectedLevel = "";
 let selectedUnit = "";
 let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
+
+const chooseFolderVisualBtn = document.getElementById("chooseFolderVisualBtn");
+const lessonFolderInput = document.getElementById("lessonFolderInput");
+const backToUnitsBtn = document.getElementById("backToUnitsBtn");
+const lessonLibraryGrid = document.getElementById("lessonLibraryGrid");
+const libraryStatus = document.getElementById("libraryStatus");
+const libraryBreadcrumb = document.getElementById("libraryBreadcrumb");
+const learnerNameInput = document.getElementById("learnerNameInput");
+const saveLearnerBtn = document.getElementById("saveLearnerBtn");
+const learnerStatus = document.getElementById("learnerStatus");
 let lessonSections = ["Lesson", "Vocabulary", "Grammar", "Dialogue", "Practice"];
 let currentLessonSectionIndex = 0;
 
@@ -279,6 +289,7 @@ if(loadBtn){ loadBtn.addEventListener("click", async () => {
     loadStatus.textContent = "There was a problem reading the workbook. Make sure it has Questions and Results sheets.";
   }
 });
+}
 
 
 
@@ -328,11 +339,6 @@ function setLearnerName(){
   learnerName = sanitizeLearnerName(learnerNameInput ? learnerNameInput.value : learnerName);
   localStorage.setItem("deutschHeimkehr.activeLearner", learnerName);
   updateLearnerUI();
-  if(learnerStatus){
-    learnerStatus.textContent = learnerName === "Guest"
-      ? "Saved. Using Guest profile on this device."
-      : `Saved. Progress is being saved for ${learnerName} on this device.`;
-  }
   renderLessonLibrary();
 }
 
@@ -463,7 +469,7 @@ async function loadCourseManifest(){
     renderLessonLibrary();
   }catch(err){
     console.warn("Could not load course manifest.", err);
-    libraryStatus.textContent = "Course could not load. Make sure source/course.json and the lesson workbook files are uploaded to GitHub.";
+    libraryStatus.textContent = "Course could not load. Please refresh the page.";
     libraryBreadcrumb.textContent = "";
   }
 }
@@ -1392,15 +1398,19 @@ async function downloadUpdatedWorkbook(){
   downloadStatus.innerHTML = "Results download started.<br><br><strong>Save over:</strong> " + escapeHtml(workbookFileName);
 }
 
-confirmDownif(loadBtn){ loadBtn.addEventListener("click", async () => {
-  hideWorkbookSafetyBox();
-  downloadStatus.innerHTML = "Starting results download...";
-  await downloadUpdatedWorkbook();
-});
-cancelDownloadBtn.addEventListener("click", () => {
-  hideWorkbookSafetyBox();
-  downloadStatus.innerHTML = "<strong>Download canceled.</strong><br><br>Reload the latest workbook if you edited it after loading it.";
-});
+if(confirmDownloadBtn){
+  confirmDownloadBtn.addEventListener("click", async () => {
+    hideWorkbookSafetyBox();
+    downloadStatus.innerHTML = "Starting results download...";
+    await downloadUpdatedWorkbook();
+  });
+}
+if(cancelDownloadBtn){
+  cancelDownloadBtn.addEventListener("click", () => {
+    hideWorkbookSafetyBox();
+    downloadStatus.innerHTML = "<strong>Download canceled.</strong><br><br>Reload the latest workbook if you edited it after loading it.";
+  });
+}
 
 restartBtn.addEventListener("click", () => {
   questionStates = [];
