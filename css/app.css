@@ -568,3 +568,30 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* v3.1.4 level-first course flow */
+.lesson-library-card.disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.lesson-library-card.disabled:hover {
+  transform: none;
+  border-color: var(--border);
+  background: rgba(255,255,255,0.06);
+}
+
+.level-card .unit-card-title {
+  font-size: 24px;
+}
+
+.coming-soon-badge {
+  display: inline-block;
+  margin: 4px 0 10px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.20);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: bold;
+}
