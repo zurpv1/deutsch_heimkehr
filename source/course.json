@@ -3,53 +3,102 @@
     {
       "level": "A1",
       "title": "A1 Beginner",
-      "subtitle": "First steps: greetings, introductions, and everyday basics.",
+      "subtitle": "Practical German for everyday life and returning home.",
       "status": "available",
       "units": [
         {
           "unit": "1",
-          "title": "Getting Started",
-          "subtitle": "Greetings, introductions, and basic German foundations.",
+          "title": "Greetings & Introductions",
+          "subtitle": "Meet people, introduce yourself, and use polite everyday phrases.",
           "path": "source/xlsx/A1/unit-1",
           "lessons": [
             {
               "lesson": "1",
               "title": "Lesson 1",
-              "subtitle": "First words and introductions",
+              "subtitle": "Greetings and first words",
               "file": "Deutsch_Heimkehr_A1_U1_L1_v1.0.xlsx",
               "status": "available"
             },
             {
               "lesson": "2",
               "title": "Lesson 2",
-              "subtitle": "Introductions and simple identity phrases",
+              "subtitle": "Names and introductions",
               "file": "Deutsch_Heimkehr_A1_U1_L2_v1.0.xlsx",
               "status": "available"
             },
             {
               "lesson": "3",
               "title": "Lesson 3",
-              "subtitle": "Where you are from and where you live",
+              "subtitle": "Polite forms and simple responses",
               "file": "Deutsch_Heimkehr_A1_U1_L3_v1.0.xlsx",
               "status": "available"
             },
             {
               "lesson": "4",
               "title": "Lesson 4",
-              "subtitle": "Numbers and basic personal information",
+              "subtitle": "Basic personal phrases",
               "file": "Deutsch_Heimkehr_A1_U1_L4_v1.0.xlsx",
               "status": "available"
             },
             {
               "lesson": "5",
               "title": "Lesson 5",
-              "subtitle": "Reviewing greetings and introductions",
+              "subtitle": "Unit 1 conversation practice",
               "file": "Deutsch_Heimkehr_A1_U1_L5_v1.0.xlsx",
               "status": "available"
             },
             {
               "lesson": "review",
               "title": "Unit 1 Review",
+              "subtitle": "Coming soon",
+              "status": "coming-soon"
+            }
+          ]
+        },
+        {
+          "unit": "2",
+          "title": "People & Personal Life",
+          "subtitle": "Talk about family, origin, languages, work, and descriptions.",
+          "path": "source/xlsx/A1/unit-2",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Lesson 1",
+              "subtitle": "Family & Home",
+              "file": "Deutsch_Heimkehr_A1_U2_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Lesson 2",
+              "subtitle": "Countries & Languages",
+              "file": "Deutsch_Heimkehr_A1_U2_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Lesson 3",
+              "subtitle": "Work & Professions",
+              "file": "Deutsch_Heimkehr_A1_U2_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Lesson 4",
+              "subtitle": "Describing People",
+              "file": "Deutsch_Heimkehr_A1_U2_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Lesson 5",
+              "subtitle": "Introducing Others",
+              "file": "Deutsch_Heimkehr_A1_U2_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 2 Review",
               "subtitle": "Coming soon",
               "status": "coming-soon"
             }
