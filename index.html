@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Deutsch Heimkehr v3.1.4</title>
+  <title>Deutsch Heimkehr v3.2.0</title>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <link rel="stylesheet" href="css/app.css">
 </head>
@@ -53,7 +53,7 @@
               </label>
             </div>
 
-            <div id="libraryStatus" class="library-status">Loading course...</div>
+            <div id="libraryStatus" class="library-status">No course selected. Choose a level to begin.</div>
             <div class="library-toolbar">
               <div id="libraryBreadcrumb" class="breadcrumb"></div>
               <button id="backToUnitsBtn" class="secondary hidden" type="button">← Back</button>
@@ -130,16 +130,7 @@
           <div id="finalScore" class="summary-score"></div>
           <p id="finalSummary"></p>
 
-          <div id="downloadStatus" class="file-note hidden"></div>
-          <div id="safetyBox" class="file-note hidden">
-            <h3 style="margin-top:0;color:#fbb52b;">⚠ Workbook Safety Check</h3>
-            <div id="safetyDetails"></div>
-            <p>Have you edited this workbook in Excel since loading it? If yes, cancel and reload the workbook before saving results.</p>
-            <div class="actions">
-              
-              
-            </div>
-          </div>
+          <div id="saveStatus" class="profile-save-note hidden"></div>
 
           <div class="actions">
             <button id="returnCourseBtn">Return to Course</button>
@@ -163,7 +154,7 @@
       </aside>
     </div>
 
-    <footer class="app-footer">Deutsch Heimkehr • v3.1.4</footer>
+    <footer class="app-footer">Deutsch Heimkehr • v3.2.0</footer>
   </div>
 
 <script src="js/app.js"></script>
