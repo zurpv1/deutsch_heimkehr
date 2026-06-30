@@ -32,7 +32,7 @@ source/xlsx/A1/unit-1/Deutsch_Heimkehr_A1_U1_L6_v1.0.xlsx
 
 ## Current release
 
-Deutsch Heimkehr v3.1.1
+Deutsch Heimkehr v3.1.3
 
 
 ## Progress storage
