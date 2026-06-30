@@ -3,21 +3,80 @@
     {
       "level": "A1",
       "title": "A1 Beginner",
+      "subtitle": "First steps: greetings, introductions, and everyday basics.",
+      "status": "available",
       "units": [
         {
           "unit": "1",
-          "title": "Unit 1: Getting Started",
+          "title": "Getting Started",
+          "subtitle": "Greetings, introductions, and basic German foundations.",
           "path": "source/xlsx/A1/unit-1",
           "lessons": [
             {
               "lesson": "1",
               "title": "Lesson 1",
               "subtitle": "First words and introductions",
-              "file": "Deutsch_Heimkehr_A1_U1_L1_v1.0.xlsx"
+              "file": "Deutsch_Heimkehr_A1_U1_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Lesson 2",
+              "subtitle": "Introductions and simple identity phrases",
+              "file": "Deutsch_Heimkehr_A1_U1_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Lesson 3",
+              "subtitle": "Where you are from and where you live",
+              "file": "Deutsch_Heimkehr_A1_U1_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Lesson 4",
+              "subtitle": "Numbers and basic personal information",
+              "file": "Deutsch_Heimkehr_A1_U1_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Lesson 5",
+              "subtitle": "Reviewing greetings and introductions",
+              "file": "Deutsch_Heimkehr_A1_U1_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 1 Review",
+              "subtitle": "Coming soon",
+              "status": "coming-soon"
             }
           ]
         }
       ]
+    },
+    {
+      "level": "A2",
+      "title": "A2 Elementary",
+      "subtitle": "Coming soon",
+      "status": "coming-soon",
+      "units": []
+    },
+    {
+      "level": "B1",
+      "title": "B1 Intermediate",
+      "subtitle": "Coming soon",
+      "status": "coming-soon",
+      "units": []
+    },
+    {
+      "level": "B2",
+      "title": "B2 Upper Intermediate",
+      "subtitle": "Coming soon",
+      "status": "coming-soon",
+      "units": []
     }
   ]
 }
