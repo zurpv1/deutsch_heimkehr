@@ -7,7 +7,8 @@ let selectedAnswer = "", answered = false;
 let lessonLibrary = [];
 let selectedLibraryIndex = -1;
 let currentLessonSummary = null;
-let libraryView = "units";
+let courseManifest = { courses: [] };
+let libraryView = "levels";
 let selectedLevel = "";
 let selectedUnit = "";
 let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
@@ -88,7 +89,7 @@ if(chooseFolderVisualBtn && lessonFolderInput){
   chooseFolderVisualBtn.addEventListener("click", () => lessonFolderInput.click());
   lessonFolderInput.addEventListener("change", buildLessonLibraryFromFolder);
 }
-backToUnitsBtn.addEventListener("click", renderUnitLibrary);
+backToUnitsBtn.addEventListener("click", handleLibraryBack);
 
 function normalize(value){ return String(value || "").trim().toLowerCase(); }
 function normalizeGerman(value){
@@ -399,44 +400,33 @@ async function loadCourseManifest(){
     const response = await fetch("source/course.json", { cache: "no-store" });
     if(!response.ok) throw new Error("source/course.json was not found.");
 
-    const manifest = await response.json();
+    courseManifest = await response.json();
     const items = [];
 
-    (manifest.courses || []).forEach(course => {
+    (courseManifest.courses || []).forEach(course => {
       (course.units || []).forEach(unit => {
         const unitPath = unit.path || "";
         (unit.lessons || []).forEach(lesson => {
-          if(typeof lesson === "string"){
-            items.push({
-              level: course.level || "",
-              unit: String(unit.unit || ""),
-              unitTitle: unit.title || "",
-              fileName: lesson,
-              url: unitPath ? `${unitPath}/${lesson}` : lesson
-            });
-          } else {
-            const fileName = lesson.file || lesson.fileName || lesson.path || "";
-            items.push({
-              level: lesson.level || course.level || "",
-              unit: String(lesson.unit || unit.unit || ""),
-              lessonNumber: lesson.lesson || lesson.lessonNumber || "",
-              unitTitle: unit.title || "",
-              title: lesson.title || "",
-              subtitle: lesson.subtitle || lesson.description || "",
-              fileName,
-              url: lesson.path || (unitPath ? `${unitPath}/${fileName}` : fileName)
-            });
-          }
+          const lessonObj = typeof lesson === "string" ? { file: lesson } : (lesson || {});
+          const fileName = lessonObj.file || lessonObj.fileName || "";
+          if(!fileName || lessonObj.status === "coming-soon") return;
+          items.push({
+            level: lessonObj.level || course.level || "",
+            unit: String(lessonObj.unit || unit.unit || ""),
+            lessonNumber: lessonObj.lesson || lessonObj.lessonNumber || "",
+            unitTitle: unit.title || "",
+            title: lessonObj.title || "",
+            subtitle: lessonObj.subtitle || lessonObj.description || "",
+            fileName,
+            url: lessonObj.path || (unitPath ? `${unitPath}/${fileName}` : fileName)
+          });
         });
       });
     });
 
-    if(!items.length){
-      libraryStatus.textContent = "No lessons are available yet.";
-      return;
+    if(items.length){
+      libraryStatus.textContent = `Loading ${items.length} lesson(s)...`;
     }
-
-    libraryStatus.textContent = `Loading ${items.length} lesson(s)...`;
 
     for(const item of items){
       try{
@@ -473,7 +463,6 @@ async function loadCourseManifest(){
     libraryBreadcrumb.textContent = "";
   }
 }
-
 
 async function buildLessonLibraryFromFolder(){
   const files = Array.from(lessonFolderInput.files || []).filter(f => {
@@ -630,25 +619,43 @@ function inferFromFilename(name, letter){
 }
 
 
-function getUnitGroups(){
-  const map = new Map();
-  lessonLibrary.forEach((entry, idx) => {
-    const s = entry.summary || {};
-    const level = s.level || "Course";
-    const unit = s.unit || "1";
-    const key = `${level}|${unit}`;
-    if(!map.has(key)){
-      map.set(key, { level, unit, unitTitle: s.unitTitle || "", lessons: [] });
-    }
-    const group = map.get(key); if(!group.unitTitle && s.unitTitle) group.unitTitle = s.unitTitle; group.lessons.push({ entry, idx });
+function getCourseByLevel(level){
+  return (courseManifest.courses || []).find(c => String(c.level || "") === String(level || ""));
+}
+
+function getAvailableLessonEntry(level, unit, lesson){
+  return lessonLibrary
+    .map((entry, idx) => ({ entry, idx }))
+    .find(x =>
+      String(x.entry.summary.level || "Course") === String(level || "") &&
+      String(x.entry.summary.unit || "1") === String(unit || "") &&
+      String(x.entry.summary.lesson || "") === String(lesson || "")
+    ) || null;
+}
+
+function getUnitGroups(levelFilter){
+  const groups = [];
+  const courses = levelFilter ? [getCourseByLevel(levelFilter)].filter(Boolean) : (courseManifest.courses || []);
+
+  courses.forEach(course => {
+    (course.units || []).forEach(unit => {
+      const lessons = (unit.lessons || []).map(lesson => {
+        const lessonObj = typeof lesson === "string" ? { file: lesson } : (lesson || {});
+        const lessonNumber = String(lessonObj.lesson || lessonObj.lessonNumber || inferFromFilename(lessonObj.file || lessonObj.fileName || "", "L") || "");
+        const available = getAvailableLessonEntry(course.level, unit.unit, lessonNumber);
+        return { manifest: lessonObj, available, lessonNumber };
+      });
+      groups.push({
+        level: course.level || "",
+        unit: String(unit.unit || ""),
+        unitTitle: unit.title || unitTitle(course.level, unit.unit),
+        subtitle: unit.subtitle || "",
+        lessons
+      });
+    });
   });
 
-  return Array.from(map.values()).sort((a,b) => {
-    const al = String(a.level || "");
-    const bl = String(b.level || "");
-    if(al !== bl) return al.localeCompare(bl, undefined, { numeric:true });
-    return Number(a.unit || 0) - Number(b.unit || 0);
-  });
+  return groups.sort((a,b) => Number(a.unit || 0) - Number(b.unit || 0));
 }
 
 function unitTitle(level, unit){
@@ -663,41 +670,79 @@ function unitTitle(level, unit){
   return titles[`${level}|${unit}`] || `Unit ${unit}`;
 }
 
-function renderUnitLibrary(){
-  libraryView = "units";
+function handleLibraryBack(){
+  if(libraryView === "lessons") renderUnitLibrary(selectedLevel);
+  else renderLevelLibrary();
+}
+
+function renderLevelLibrary(){
+  libraryView = "levels";
   selectedLevel = "";
   selectedUnit = "";
   selectedLibraryIndex = -1;
   lessonLibraryGrid.innerHTML = "";
   backToUnitsBtn.classList.add("hidden");
+  libraryBreadcrumb.textContent = "Course Library";
 
-  const groups = getUnitGroups();
-  if(!groups.length){
-    libraryStatus.textContent = "No valid lessons found.";
-    libraryBreadcrumb.textContent = "";
-    lessonLibraryGrid.innerHTML = '<div class="lesson-card">No valid lesson workbooks were found in the selected folder.</div>';
+  const courses = courseManifest.courses || [];
+  if(!courses.length){
+    libraryStatus.textContent = "No course levels are available yet.";
+    lessonLibraryGrid.innerHTML = '<div class="lesson-card">No course levels were found.</div>';
     return;
   }
 
-  const levels = [...new Set(groups.map(g => g.level).filter(Boolean))];
-  libraryStatus.textContent = `${groups.length} unit(s) available. Choose a unit to begin.`;
-  libraryBreadcrumb.textContent = levels.length === 1 ? `${levels[0]} Course` : "Course Library";
+  libraryStatus.textContent = "Choose a level to begin.";
+  courses.forEach(course => {
+    const units = course.units || [];
+    const actualLessons = lessonLibrary.filter(x => String(x.summary.level || "") === String(course.level || "")).length;
+    const comingSoon = course.status === "coming-soon" || !units.length;
+    const card = document.createElement("div");
+    card.className = "lesson-library-card level-card" + (comingSoon ? " disabled" : "");
+    card.title = comingSoon ? "Coming soon." : "Click to view units.";
+    card.innerHTML = `
+      <div class="unit-card-title">${escapeHtml(course.title || course.level || "Level")}</div>
+      <div class="lesson-card-desc">${escapeHtml(course.subtitle || "")}</div>
+      <div class="unit-card-desc">${comingSoon ? "Coming soon" : `${units.length} unit${units.length === 1 ? "" : "s"} • ${actualLessons} available lesson${actualLessons === 1 ? "" : "s"}`}</div>
+      <div class="lesson-card-file">${comingSoon ? "Not available yet." : "Click to view this level."}</div>
+    `;
+    if(!comingSoon){
+      card.addEventListener("click", () => renderUnitLibrary(course.level));
+    }
+    lessonLibraryGrid.appendChild(card);
+  });
+}
+
+function renderUnitLibrary(level){
+  libraryView = "units";
+  selectedLevel = level || selectedLevel || "";
+  selectedUnit = "";
+  selectedLibraryIndex = -1;
+  lessonLibraryGrid.innerHTML = "";
+  backToUnitsBtn.classList.remove("hidden");
+
+  const course = getCourseByLevel(selectedLevel);
+  const groups = getUnitGroups(selectedLevel);
+  if(!course || !groups.length){
+    libraryStatus.textContent = "No units are available for this level yet.";
+    libraryBreadcrumb.textContent = selectedLevel || "Course";
+    lessonLibraryGrid.innerHTML = '<div class="lesson-card">No units are available yet.</div>';
+    return;
+  }
+
+  libraryStatus.textContent = `${groups.length} unit(s) available. Choose a unit.`;
+  libraryBreadcrumb.textContent = course.title || selectedLevel;
 
   groups.forEach(group => {
-    const first = group.lessons[0]?.entry?.summary || {};
-    const last = group.lessons[group.lessons.length - 1]?.entry?.summary || {};
+    const availableLessons = group.lessons.filter(x => x.available).length;
+    const plannedLessons = group.lessons.length;
     const card = document.createElement("div");
     card.className = "lesson-library-card";
     card.title = "Click to view lessons.";
-    const title = group.unitTitle || unitTitle(group.level, group.unit);
-    const lessonCount = group.lessons.length;
-    const rangeText = lessonCount === 1
-      ? `Lesson ${first.lesson || ""}`
-      : `Lessons ${first.lesson || ""}–${last.lesson || ""}`;
     card.innerHTML = `
       <div class="unit-card-title">${escapeHtml(group.level ? group.level + " • Unit " + group.unit : "Unit " + group.unit)}</div>
-      <div class="lesson-card-meta">${escapeHtml(title)}</div>
-      <div class="unit-card-desc">${escapeHtml(rangeText)} • ${lessonCount} lesson${lessonCount === 1 ? "" : "s"}</div>
+      <div class="lesson-card-meta">${escapeHtml(group.unitTitle || unitTitle(group.level, group.unit))}</div>
+      ${group.subtitle ? `<div class="unit-card-desc">${escapeHtml(group.subtitle)}</div>` : ""}
+      <div class="unit-card-desc">${availableLessons} available • ${plannedLessons} planned</div>
       <div class="lesson-card-file">Click to view this unit.</div>
     `;
     card.addEventListener("click", () => renderLessonsForUnit(group.level, group.unit));
@@ -712,44 +757,57 @@ function renderLessonsForUnit(level, unit){
   lessonLibraryGrid.innerHTML = "";
   backToUnitsBtn.classList.remove("hidden");
 
-  const lessons = lessonLibrary
-    .map((entry, idx) => ({ entry, idx }))
-    .filter(x => (x.entry.summary.level || "Course") === level && String(x.entry.summary.unit || "1") === String(unit))
-    .sort((a,b) => Number(a.entry.summary.lesson || 0) - Number(b.entry.summary.lesson || 0));
+  const course = getCourseByLevel(level);
+  const unitObj = (course?.units || []).find(u => String(u.unit || "") === String(unit || ""));
+  const planned = (unitObj?.lessons || []).map(lesson => {
+    const lessonObj = typeof lesson === "string" ? { file: lesson } : (lesson || {});
+    const lessonNumber = String(lessonObj.lesson || lessonObj.lessonNumber || inferFromFilename(lessonObj.file || lessonObj.fileName || "", "L") || "");
+    const available = getAvailableLessonEntry(level, unit, lessonNumber);
+    return { lessonObj, lessonNumber, available };
+  });
 
-  const title = (lessons[0]?.entry?.summary?.unitTitle) || unitTitle(level, unit);
-  libraryStatus.textContent = `${lessons.length} lesson(s) available. Choose a lesson to begin.`;
+  const title = unitObj?.title || unitTitle(level, unit);
+  const availableCount = planned.filter(x => x.available).length;
+  libraryStatus.textContent = `${availableCount} lesson(s) available. Choose any available lesson.`;
   libraryBreadcrumb.textContent = `${level} • Unit ${unit} - ${title}`;
 
-  lessons.forEach(({entry, idx}) => {
-    const s = entry.summary;
-    const card = document.createElement("div");
-    card.className = "lesson-library-card" + (idx === selectedLibraryIndex ? " selected" : "");
-    card.title = "Click to begin lesson.";
-    const labelParts = [];
-    if(s.level) labelParts.push(s.level);
-    if(s.unit) labelParts.push(`Unit ${s.unit}`);
-    if(s.lesson) labelParts.push(`Lesson ${s.lesson}`);
-    const meta = labelParts.join(" • ") || "Lesson";
+  if(!planned.length){
+    lessonLibraryGrid.innerHTML = '<div class="lesson-card">No lessons are available yet.</div>';
+    return;
+  }
 
+  planned.forEach(({lessonObj, lessonNumber, available}) => {
+    const entry = available?.entry;
+    const idx = available?.idx;
+    const s = entry?.summary || {};
+    const isAvailable = !!available;
+    const displayTitle = lessonObj.title || s.title || (lessonNumber === "review" ? "Unit Review" : `Lesson ${lessonNumber}`);
+    const displaySubtitle = lessonObj.subtitle || s.subtitle || "";
+    const card = document.createElement("div");
+    card.className = "lesson-library-card" + (idx === selectedLibraryIndex ? " selected" : "") + (!isAvailable ? " disabled" : "");
+    card.title = isAvailable ? "Click to begin lesson." : "Coming soon.";
+    const metaParts = [level, `Unit ${unit}`];
+    if(lessonNumber) metaParts.push(lessonNumber === "review" ? "Review" : `Lesson ${lessonNumber}`);
     card.innerHTML = `
-      <div class="lesson-card-title">${escapeHtml(s.title || entry.file.name)}</div>
-      <div class="lesson-card-meta">${escapeHtml(meta)}</div>
-      ${s.subtitle ? `<div class="lesson-card-desc">${escapeHtml(s.subtitle)}</div>` : ""}
-      <div class="lesson-card-meta">${escapeHtml([s.vocab ? s.vocab + " vocabulary" : "", s.questions ? s.questions + " questions" : ""].filter(Boolean).join(" • "))}</div>
-      ${progressBadgeFor(s)}
-      <div class="lesson-card-file">Click to begin this lesson.</div>
+      <div class="lesson-card-title">${escapeHtml(displayTitle)}</div>
+      <div class="lesson-card-meta">${escapeHtml(metaParts.join(" • "))}</div>
+      ${displaySubtitle ? `<div class="lesson-card-desc">${escapeHtml(displaySubtitle)}</div>` : ""}
+      ${isAvailable ? `<div class="lesson-card-meta">${escapeHtml([s.vocab ? s.vocab + " vocabulary" : "", s.questions ? s.questions + " questions" : ""].filter(Boolean).join(" • "))}</div>` : '<div class="coming-soon-badge">Coming soon</div>'}
+      ${isAvailable ? progressBadgeFor(s) : ""}
+      <div class="lesson-card-file">${isAvailable ? "Click to begin this lesson." : "This lesson workbook has not been added yet."}</div>
     `;
-    card.addEventListener("click", async () => {
-      await loadLessonFromLibrary(idx);
-      beginLessonFlow();
-    });
+    if(isAvailable){
+      card.addEventListener("click", async () => {
+        await loadLessonFromLibrary(idx);
+        beginLessonFlow();
+      });
+    }
     lessonLibraryGrid.appendChild(card);
   });
 }
 
 function renderLessonLibrary(){
-  renderUnitLibrary();
+  renderLevelLibrary();
 }
 
 async function loadLessonFromLibrary(index){
@@ -816,8 +874,8 @@ function showCourseHome(){
   feedback.className = "feedback";
   feedback.innerHTML = "";
   updateDashboard();
-  if(lessonLibrary && lessonLibrary.length){
-    renderUnitLibrary();
+  if(courseManifest && (courseManifest.courses || []).length){
+    renderLevelLibrary();
   }
 }
 
