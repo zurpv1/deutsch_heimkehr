@@ -800,8 +800,10 @@
   grid-template-columns: repeat(2, 118px);
   justify-content: center;
   align-items: start;
-  gap: 14px;
+  column-gap: 16px;
+  row-gap: 12px;
   margin: 8px 0 2px;
+  width: 100%;
 }
 
 .footer-qr-card {
@@ -811,6 +813,7 @@
   align-items: center;
   gap: 7px;
   width: 118px;
+  min-width: 118px;
   padding: 10px 8px;
   border: 1px solid var(--border);
   border-radius: 14px;
