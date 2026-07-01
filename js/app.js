@@ -14,6 +14,23 @@ let selectedUnit = "";
 let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
 let dynamicLessonSections = null;
 
+const APP_NAME = "Deutsch Heimkehr";
+const APP_VERSION = "v3.2.4";
+
+function setAppChromeTitle(){
+  if(pageTitle) pageTitle.textContent = APP_NAME;
+  if(quizHeaderTitle) quizHeaderTitle.textContent = APP_NAME;
+  document.title = `${APP_NAME} ${APP_VERSION}`;
+}
+
+function stripLessonVersionTitle(value){
+  return String(value || "")
+    .replace(/^Deutsch\s+Heimkehr\s+/i, "")
+    .replace(/\s+v\d+(?:\.\d+)*\s*$/i, "")
+    .replace(/_/g, " ")
+    .trim();
+}
+
 const chooseFolderVisualBtn = document.getElementById("chooseFolderVisualBtn");
 const lessonFolderInput = document.getElementById("lessonFolderInput");
 const backToUnitsBtn = document.getElementById("backToUnitsBtn");
@@ -100,6 +117,7 @@ if(chooseFolderVisualBtn && lessonFolderInput){
   lessonFolderInput.addEventListener("change", buildLessonLibraryFromFolder);
 }
 backToUnitsBtn.addEventListener("click", handleLibraryBack);
+setAppChromeTitle();
 
 function normalize(value){ return String(value || "").trim().toLowerCase(); }
 function normalizeGerman(value){
@@ -181,9 +199,7 @@ async function parseWorkbook(arrayBuffer){
     } else {
       allQuestions = [];
       quizTitle = currentLessonSummary?.title || "A1 Comprehensive Review & Assessment";
-      pageTitle.textContent = quizTitle;
-      quizHeaderTitle.textContent = quizTitle;
-      document.title = quizTitle;
+      setAppChromeTitle();
       questionCountText.textContent = "No interactive assessment is available for this workbook.";
       quizStartArea.classList.add("hidden");
     }
@@ -221,7 +237,7 @@ async function parseWorkbook(arrayBuffer){
     const meta = lessonRowsToMetadata(lessonData.Lesson || []);
     const heading = (lessonData.Lesson && lessonData.Lesson[0] && lessonData.Lesson[0][1]) ? lessonData.Lesson[0][1] : "";
     currentLessonSummary = {
-      title: meta.Title || heading || quizTitle || workbookFileName,
+      title: stripLessonVersionTitle(meta.Title || heading || quizTitle) || workbookFileName,
       fileName: workbookFileName,
       level: inferFromFilename(workbookFileName, "A"),
       unit: inferFromFilename(workbookFileName, "U"),
@@ -262,9 +278,7 @@ function loadQuestionsFromRows(rows){
   if(!rows || rows.length < 2) throw new Error("Questions sheet does not contain expected rows.");
 
   if(normalize(rows[0][0]) === "title") quizTitle = rows[0][1] || "Deutsch Heimkehr";
-  pageTitle.textContent = quizTitle; 
-  quizHeaderTitle.textContent = quizTitle; 
-  document.title = quizTitle;
+  setAppChromeTitle();
 
   let headerRowIndex = rows.findIndex(r => normalize(r[0]) === "id");
 
@@ -976,7 +990,7 @@ function getCurrentLessonDisplayName(){
     if(currentLessonSummary.unit) parts.push(`Unit ${currentLessonSummary.unit}`);
     if(currentLessonSummary.lesson) parts.push(`Lesson ${currentLessonSummary.lesson}`);
     const prefix = parts.join(" • ");
-    const title = currentLessonSummary.title || workbookFileName || "";
+    const title = stripLessonVersionTitle(currentLessonSummary.title || "") || stripLessonVersionTitle(workbookFileName || "") || "";
     return prefix ? `${prefix} - ${title}` : title;
   }
   return workbookFileName || "";
@@ -1676,7 +1690,6 @@ async function loadAboutContent(){
       <section class="about-section">
         <h3>Version</h3>
         <p><strong>App Version:</strong> ${escapeHtml(data.version || "3.2.0")}</p>
-        ${data.website ? `<p><strong>Website:</strong> <a href="${escapeHtml(data.website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.website.replace(/^https?:\/\//, ""))}</a></p>` : ""}
         ${data.updated ? `<p><strong>Last Updated:</strong> ${escapeHtml(data.updated)}</p>` : ""}
       </section>
     `;
