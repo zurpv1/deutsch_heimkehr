@@ -796,7 +796,6 @@
 }
 
 .footer-qr-grid {
-<<<<<<< HEAD
   display: grid;
   grid-template-columns: repeat(2, 118px);
   justify-content: center;
@@ -831,21 +830,6 @@
   color: var(--muted);
   font-weight: 700;
   text-align: center;
-=======
-  display: flex;
-  justify-content: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-
-.footer-qr-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
->>>>>>> 47c28479d517a153bdf739307d46151baf984e58
 }
 
 .footer-support-link {
@@ -866,14 +850,9 @@
 }
 
 .footer-qr {
-<<<<<<< HEAD
   display: block;
   width: 92px;
   height: 92px;
-=======
-  width: 94px;
-  height: 94px;
->>>>>>> 47c28479d517a153bdf739307d46151baf984e58
   padding: 6px;
   border-radius: 10px;
   background: #ffffff;
