@@ -15,7 +15,7 @@ let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogu
 let dynamicLessonSections = null;
 
 const APP_NAME = "Deutsch Heimkehr";
-const APP_VERSION = "v3.2.4";
+const APP_VERSION = "v3.2.5";
 
 function setAppChromeTitle(){
   if(pageTitle) pageTitle.textContent = APP_NAME;
@@ -988,12 +988,9 @@ function getCurrentLessonDisplayName(){
     const parts = [];
     if(currentLessonSummary.level) parts.push(currentLessonSummary.level);
     if(currentLessonSummary.unit) parts.push(`Unit ${currentLessonSummary.unit}`);
-    if(currentLessonSummary.lesson) parts.push(`Lesson ${currentLessonSummary.lesson}`);
-    const prefix = parts.join(" • ");
-    const title = stripLessonVersionTitle(currentLessonSummary.title || "") || stripLessonVersionTitle(workbookFileName || "") || "";
-    return prefix ? `${prefix} - ${title}` : title;
+    return parts.join(" • ");
   }
-  return workbookFileName || "";
+  return "";
 }
 
 function updateCourseHeader(){
