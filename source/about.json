@@ -25,20 +25,39 @@
     {
       "heading": "Course Roadmap",
       "roadmap": [
-        { "level": "A1", "status": "Complete" },
-        { "level": "A2", "status": "In Development" },
-        { "level": "B1", "status": "Planned" },
-        { "level": "B2", "status": "Planned" },
-        { "level": "C1", "status": "Future" },
-        { "level": "C2", "status": "Future" }
+        {
+          "level": "A1",
+          "status": "Complete"
+        },
+        {
+          "level": "A2",
+          "status": "In Development"
+        },
+        {
+          "level": "B1",
+          "status": "Planned"
+        },
+        {
+          "level": "B2",
+          "status": "Planned"
+        },
+        {
+          "level": "C1",
+          "status": "Future"
+        },
+        {
+          "level": "C2",
+          "status": "Future"
+        }
       ]
     },
     {
       "heading": "Keep Deutsch Heimkehr Free",
-      "body": "Deutsch Heimkehr is offered free of charge because language learning should be accessible. Optional support helps fund new lessons, app improvements, hosting, maintenance, and future learning resources.",
+      "body": "Deutsch Heimkehr is offered free of charge because language learning should be accessible. Optional support helps fund new lessons, app improvements, hosting, maintenance, and future learning resources. Your support helps keep Deutsch Heimkehr free for everyone.",
       "support": true
     }
   ],
-  "version": "3.2.0",
-  "updated": "July 2026"
+  "version": "3.2.1",
+  "updated": "July 2026",
+  "footer": "Built with ❤️ to help people build a life in Germany."
 }
