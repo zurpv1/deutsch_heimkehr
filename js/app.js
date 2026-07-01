@@ -80,6 +80,16 @@ const dashCorrect = document.getElementById("dashCorrect");
 const dashIncorrect = document.getElementById("dashIncorrect");
 const dashScore = document.getElementById("dashScore");
 const questionMap = document.getElementById("questionMap");
+const aboutPanel = document.getElementById("aboutPanel");
+const aboutContent = document.getElementById("aboutContent");
+const aboutBackBtn = document.getElementById("aboutBackBtn");
+const aboutBtn = document.getElementById("aboutBtn");
+const aboutBtnQuiz = document.getElementById("aboutBtnQuiz");
+const supportBtn = document.getElementById("supportBtn");
+const supportBtnQuiz = document.getElementById("supportBtnQuiz");
+const supportModal = document.getElementById("supportModal");
+const supportCloseBtn = document.getElementById("supportCloseBtn");
+const supportPaypalLink = document.getElementById("supportPaypalLink");
 
 document.getElementById("quiz10Btn").addEventListener("click", () => startQuiz(10));
 document.getElementById("quiz25Btn").addEventListener("click", () => startQuiz(25));
@@ -983,6 +993,7 @@ function showCourseHome(){
   quizPanel.classList.add("hidden");
   lessonPanel.classList.add("hidden");
   resultsPanel.classList.add("hidden");
+  if(aboutPanel) aboutPanel.classList.add("hidden");
   setupPanel.classList.remove("hidden");
   quizHeader.classList.add("hidden");
   setupHeader.classList.remove("hidden");
@@ -1002,6 +1013,7 @@ function beginLessonFlow(){
   currentLessonSectionIndex = 0;
   setupPanel.classList.add("hidden");
   resultsPanel.classList.add("hidden");
+  if(aboutPanel) aboutPanel.classList.add("hidden");
   quizPanel.classList.add("hidden");
   lessonPanel.classList.remove("hidden");
   setupHeader.classList.add("hidden");
@@ -1242,6 +1254,7 @@ function startQuiz(count){
   setupPanel.classList.add("hidden");
   resultsPanel.classList.add("hidden");
   lessonPanel.classList.add("hidden");
+  if(aboutPanel) aboutPanel.classList.add("hidden");
   quizPanel.classList.remove("hidden");
   renderQuizNav();
   setupHeader.classList.add("hidden");
@@ -1522,6 +1535,7 @@ function showResults(){
   progressBar.style.width = "100%";
   saveCurrentLessonResult();
   quizPanel.classList.add("hidden");
+  if(aboutPanel) aboutPanel.classList.add("hidden");
   resultsPanel.classList.remove("hidden");
   renderResultsNav();
   quizHeader.classList.add("hidden");
@@ -1601,6 +1615,7 @@ function startRetryMissedQuestions(){
 function showRetryResults(){
   progressBar.style.width = "100%";
   quizPanel.classList.add("hidden");
+  if(aboutPanel) aboutPanel.classList.add("hidden");
   resultsPanel.classList.remove("hidden");
   renderResultsNav();
   quizHeader.classList.add("hidden");
@@ -1625,6 +1640,87 @@ function showRetryResults(){
   quizQuestions = originalQuizQuestions;
   retryMode = false;
 }
+
+
+
+function renderAboutSection(section){
+  const heading = escapeHtml(section.heading || "");
+  let html = `<section class="about-section"><h3>${heading}</h3>`;
+  if(section.body) html += `<p>${escapeHtml(section.body)}</p>`;
+  if(Array.isArray(section.cards) && section.cards.length){
+    html += `<div class="about-card-grid">${section.cards.map(card => `<div class="about-mini-card">✔ ${escapeHtml(card)}</div>`).join("")}</div>`;
+  }
+  if(Array.isArray(section.roadmap) && section.roadmap.length){
+    html += `<table class="roadmap-table"><thead><tr><th>Level</th><th>Status</th></tr></thead><tbody>${section.roadmap.map(item => `<tr><td>${escapeHtml(item.level)}</td><td>${escapeHtml(item.status)}</td></tr>`).join("")}</tbody></table>`;
+  }
+  if(section.support){
+    html += `<div class="about-support-box"><p>Support is always optional. Deutsch Heimkehr remains free for learners.</p><button type="button" class="support-btn about-support-btn">❤️ Keep Deutsch Heimkehr Free</button></div>`;
+  }
+  html += `</section>`;
+  return html;
+}
+
+async function loadAboutContent(){
+  if(!aboutContent) return;
+  try{
+    const response = await fetch("source/about.json", { cache: "no-store" });
+    if(!response.ok) throw new Error("Could not load About content.");
+    const data = await response.json();
+    aboutContent.innerHTML = `
+      <div class="about-hero">
+        <h2>${escapeHtml(data.title || "About Deutsch Heimkehr")}</h2>
+        ${data.subtitle ? `<p class="subtitle">${escapeHtml(data.subtitle)}</p>` : ""}
+        ${data.intro ? `<p>${escapeHtml(data.intro)}</p>` : ""}
+      </div>
+      ${(data.sections || []).map(renderAboutSection).join("")}
+      <section class="about-section">
+        <h3>Version</h3>
+        <p><strong>App Version:</strong> ${escapeHtml(data.version || "3.2.0")}</p>
+        ${data.updated ? `<p><strong>Last Updated:</strong> ${escapeHtml(data.updated)}</p>` : ""}
+      </section>
+    `;
+    aboutContent.querySelectorAll(".about-support-btn").forEach(btn => btn.addEventListener("click", openSupportModal));
+  }catch(e){
+    console.error(e);
+    aboutContent.innerHTML = `<h2>About Deutsch Heimkehr</h2><p>About content could not be loaded.</p>`;
+  }
+}
+
+function showAbout(){
+  if(!aboutPanel) return;
+  setupPanel.classList.add("hidden");
+  lessonPanel.classList.add("hidden");
+  quizPanel.classList.add("hidden");
+  resultsPanel.classList.add("hidden");
+  aboutPanel.classList.remove("hidden");
+  quizHeader.classList.add("hidden");
+  setupHeader.classList.remove("hidden");
+  feedback.className = "feedback";
+  feedback.innerHTML = "";
+  loadAboutContent();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function openSupportModal(){
+  if(supportModal) supportModal.classList.remove("hidden");
+}
+
+function closeSupportModal(){
+  if(supportModal) supportModal.classList.add("hidden");
+}
+
+[aboutBtn, aboutBtnQuiz].filter(Boolean).forEach(btn => btn.addEventListener("click", showAbout));
+[supportBtn, supportBtnQuiz].filter(Boolean).forEach(btn => btn.addEventListener("click", openSupportModal));
+if(aboutBackBtn) aboutBackBtn.addEventListener("click", showCourseHome);
+if(supportCloseBtn) supportCloseBtn.addEventListener("click", closeSupportModal);
+if(supportModal){
+  supportModal.addEventListener("click", event => {
+    if(event.target === supportModal) closeSupportModal();
+  });
+}
+document.addEventListener("keydown", event => {
+  if(event.key === "Escape") closeSupportModal();
+});
 
 // GitHub Pages / web mode: load course manifest automatically.
 if(document.readyState === "loading"){
