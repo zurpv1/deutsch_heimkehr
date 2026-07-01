@@ -188,11 +188,11 @@
               "status": "available"
             },
             {
-             "lesson": "review",
-             "title": "Unit 4 Review",
-             "subtitle": "Review bakeries, cafés, shopping, restaurants, ordering, and paying.",
-             "file": "Deutsch_Heimkehr_A1_U4_Review_v1.0.xlsx",
-             "status": "available"
+              "lesson": "review",
+              "title": "Unit 4 Review",
+              "subtitle": "Review bakeries, cafés, shopping, restaurants, ordering, and paying.",
+              "file": "Deutsch_Heimkehr_A1_U4_Review_v1.0.xlsx",
+              "status": "available"
             }
           ]
         },
@@ -244,7 +244,7 @@
               "file": "Deutsch_Heimkehr_A1_U5_Review_v1.0.xlsx",
               "status": "available"
             }
-          ]        
+          ]
         }
       ],
       "finalReview": {
@@ -258,9 +258,25 @@
     {
       "level": "A2",
       "title": "A2 Elementary",
-      "subtitle": "Coming soon",
-      "status": "coming-soon",
-      "units": []
+      "subtitle": "Continue building real-world German skills.",
+      "status": "available",
+      "units": [
+        {
+          "unit": "1",
+          "title": "Life in Germany",
+          "subtitle": "Build confidence for everyday situations after A1.",
+          "path": "source/xlsx/A2/unit-1",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Lesson 1",
+              "subtitle": "First A2 lesson for practical everyday German.",
+              "file": "Deutsch_Heimkehr_A2_U1_L1_v1.0.xlsx",
+              "status": "available"
+            }
+          ]
+        }
+      ]
     },
     {
       "level": "B1",
