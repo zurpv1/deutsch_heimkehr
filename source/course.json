@@ -310,6 +310,56 @@
               "status": "available"
             }
           ]
+        },
+        {
+          "unit": "2",
+          "title": "Settling In",
+          "subtitle": "Handle registration, banking, home shopping, neighborhood errands, and making friends.",
+          "path": "source/xlsx/A2/unit-2",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Registering Your Address",
+              "subtitle": "Register at the Bürgeramt, complete forms, and understand required documents.",
+              "file": "Deutsch_Heimkehr_A2_U2_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Opening a Bank Account",
+              "subtitle": "Open a Girokonto, ask about fees, cards, transfers, and banking documents.",
+              "file": "Deutsch_Heimkehr_A2_U2_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Shopping for Your Home",
+              "subtitle": "Buy furniture and household items, compare prices, and arrange delivery or pickup.",
+              "file": "Deutsch_Heimkehr_A2_U2_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Around the Neighborhood",
+              "subtitle": "Find everyday places, ask for directions, and handle simple neighborhood errands.",
+              "file": "Deutsch_Heimkehr_A2_U2_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Making Friends",
+              "subtitle": "Introduce yourself casually, make invitations, and accept or decline plans politely.",
+              "file": "Deutsch_Heimkehr_A2_U2_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 2 Review",
+              "subtitle": "Review registration, banking, home shopping, neighborhood directions, and making friends.",
+              "file": "Deutsch_Heimkehr_A2_U2_Review_v1.0.xlsx",
+              "status": "available"
+            }
+          ]
         }
       ]
     },
