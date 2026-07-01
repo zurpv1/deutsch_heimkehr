@@ -13,7 +13,6 @@ let selectedLevel = "";
 let selectedUnit = "";
 let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
 let dynamicLessonSections = null;
-const PAYPAL_SUPPORT_URL = "https://www.paypal.com/ncp/payment/TFKRKVEM6VMEG";
 
 const chooseFolderVisualBtn = document.getElementById("chooseFolderVisualBtn");
 const lessonFolderInput = document.getElementById("lessonFolderInput");
@@ -91,7 +90,6 @@ const supportBtnQuiz = document.getElementById("supportBtnQuiz");
 const supportModal = document.getElementById("supportModal");
 const supportCloseBtn = document.getElementById("supportCloseBtn");
 const supportPaypalLink = document.getElementById("supportPaypalLink");
-if(supportPaypalLink) supportPaypalLink.href = PAYPAL_SUPPORT_URL;
 
 document.getElementById("quiz10Btn").addEventListener("click", () => startQuiz(10));
 document.getElementById("quiz25Btn").addEventListener("click", () => startQuiz(25));
@@ -1677,9 +1675,9 @@ async function loadAboutContent(){
       ${(data.sections || []).map(renderAboutSection).join("")}
       <section class="about-section">
         <h3>Version</h3>
-        <p><strong>App Version:</strong> ${escapeHtml(data.version || "3.2.1")}</p>
+        <p><strong>App Version:</strong> ${escapeHtml(data.version || "3.2.0")}</p>
+        ${data.website ? `<p><strong>Website:</strong> <a href="${escapeHtml(data.website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(data.website.replace(/^https?:\/\//, ""))}</a></p>` : ""}
         ${data.updated ? `<p><strong>Last Updated:</strong> ${escapeHtml(data.updated)}</p>` : ""}
-        ${data.footer ? `<p class="about-footer-line">${escapeHtml(data.footer)}</p>` : ""}
       </section>
     `;
     aboutContent.querySelectorAll(".about-support-btn").forEach(btn => btn.addEventListener("click", openSupportModal));
