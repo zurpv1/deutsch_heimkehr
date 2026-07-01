@@ -759,3 +759,68 @@
     font-size: 25px;
   }
 }
+
+
+/* v3.2.1 PayPal footer QR and project signature */
+.app-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 22px;
+  padding: 18px 10px 12px;
+  border-top: 1px solid var(--border);
+}
+
+.footer-brand {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.footer-tagline,
+.footer-mission {
+  max-width: 520px;
+}
+
+.footer-support-link {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(251,181,43,0.12);
+  border: 1px solid rgba(251,181,43,0.38);
+  color: var(--gold);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footer-support-link:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.footer-qr {
+  width: 94px;
+  height: 94px;
+  margin-top: 4px;
+  padding: 6px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(255,255,255,0.20);
+}
+
+@media (max-width: 650px) {
+  .footer-qr {
+    width: 78px;
+    height: 78px;
+  }
+}
+
+.about-footer-line {
+  margin-top: 12px;
+  color: var(--gold);
+  font-weight: 700;
+}
