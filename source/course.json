@@ -301,3 +301,307 @@
     }
   ]
 }
+{
+  "courses": [
+    {
+      "level": "A1",
+      "title": "A1 Beginner",
+      "subtitle": "First steps toward everyday German life.",
+      "status": "available",
+      "units": [
+        {
+          "unit": "1",
+          "title": "Greetings & Introductions",
+          "subtitle": "Meet people and introduce yourself.",
+          "path": "source/xlsx/A1/unit-1",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Lesson 1",
+              "subtitle": "Greetings and first words",
+              "file": "Deutsch_Heimkehr_A1_U1_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Lesson 2",
+              "subtitle": "Introductions",
+              "file": "Deutsch_Heimkehr_A1_U1_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Lesson 3",
+              "subtitle": "Where you are from",
+              "file": "Deutsch_Heimkehr_A1_U1_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Lesson 4",
+              "subtitle": "Basic personal information",
+              "file": "Deutsch_Heimkehr_A1_U1_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Lesson 5",
+              "subtitle": "Unit 1 conversation practice",
+              "file": "Deutsch_Heimkehr_A1_U1_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 1 Review",
+              "subtitle": "Review greetings, introductions, names, origins, and basic personal information.",
+              "file": "Deutsch_Heimkehr_A1_U1_Review_v1.0.xlsx",
+              "status": "available"
+            }
+          ]
+        },
+        {
+          "unit": "2",
+          "title": "Family & Personal Information",
+          "subtitle": "Talk about yourself and others.",
+          "path": "source/xlsx/A1/unit-2",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Family & Home",
+              "file": "Deutsch_Heimkehr_A1_U2_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Nationalities & Languages",
+              "file": "Deutsch_Heimkehr_A1_U2_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Professions & Work",
+              "file": "Deutsch_Heimkehr_A1_U2_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Describing People",
+              "file": "Deutsch_Heimkehr_A1_U2_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Introducing Others",
+              "file": "Deutsch_Heimkehr_A1_U2_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 2 Review",
+              "subtitle": "Review family, home, professions, nationalities, and describing people.",
+              "file": "Deutsch_Heimkehr_A1_U2_Review_v1.0.xlsx",
+              "status": "available"
+            }
+          ]
+        },
+        {
+          "unit": "3",
+          "title": "Time & Everyday Planning",
+          "subtitle": "Use time, dates, addresses, and daily planning.",
+          "path": "source/xlsx/A1/unit-3",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Numbers, Prices & Money",
+              "file": "Deutsch_Heimkehr_A1_U3_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Time & Opening Hours",
+              "file": "Deutsch_Heimkehr_A1_U3_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Days, Months & Dates",
+              "file": "Deutsch_Heimkehr_A1_U3_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Addresses & German Forms",
+              "file": "Deutsch_Heimkehr_A1_U3_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Planning Your Day",
+              "file": "Deutsch_Heimkehr_A1_U3_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 3 Review",
+              "subtitle": "Review numbers, prices, time, dates, addresses, forms, and everyday planning.",
+              "file": "Deutsch_Heimkehr_A1_U3_Review_v1.0.xlsx",
+              "status": "available"
+            }
+          ]
+        },
+        {
+          "unit": "4",
+          "title": "Food & Shopping",
+          "subtitle": "Order food, shop for groceries, and pay confidently.",
+          "path": "source/xlsx/A1/unit-4",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Bakery & Bread",
+              "subtitle": "Order rolls, bread, pastries, and Laugenstangen.",
+              "file": "Deutsch_Heimkehr_A1_U4_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Café & Drinks",
+              "subtitle": "Order coffee, tea, and drinks for here or to go.",
+              "file": "Deutsch_Heimkehr_A1_U4_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Grocery Store",
+              "subtitle": "Find items and shop in a German supermarket.",
+              "file": "Deutsch_Heimkehr_A1_U4_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Restaurant & Ordering",
+              "subtitle": "Ask for a table, read a menu, and order food.",
+              "file": "Deutsch_Heimkehr_A1_U4_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Paying, Receipts & Polite Requests",
+              "subtitle": "Pay by card or cash and ask for receipts.",
+              "file": "Deutsch_Heimkehr_A1_U4_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 4 Review",
+              "subtitle": "Review bakeries, cafés, shopping, restaurants, ordering, and paying.",
+              "file": "Deutsch_Heimkehr_A1_U4_Review_v1.0.xlsx",
+              "status": "available"
+            }
+          ]
+        },
+        {
+          "unit": "5",
+          "title": "Transportation & Getting Around",
+          "subtitle": "Use trains, buses, directions, and travel-help phrases confidently.",
+          "path": "source/xlsx/A1/unit-5",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Transportation Basics",
+              "subtitle": "Ask where stations, stops, restrooms, and key places are.",
+              "file": "Deutsch_Heimkehr_A1_U5_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Trains & Stations",
+              "subtitle": "Read station information and ask about platforms and trains.",
+              "file": "Deutsch_Heimkehr_A1_U5_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Buses, Trams & Local Transit",
+              "subtitle": "Use local transit, stops, lines, and day tickets.",
+              "file": "Deutsch_Heimkehr_A1_U5_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Asking for Directions",
+              "subtitle": "Ask how to get somewhere and understand simple directions.",
+              "file": "Deutsch_Heimkehr_A1_U5_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Tickets, Delays & Travel Help",
+              "subtitle": "Ask for help with tickets, delays, cancellations, and connections.",
+              "file": "Deutsch_Heimkehr_A1_U5_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 5 Review",
+              "subtitle": "Review transportation, stations, local transit, directions, tickets, delays, and travel help.",
+              "file": "Deutsch_Heimkehr_A1_U5_Review_v1.0.xlsx",
+              "status": "available"
+            }
+          ]
+        }
+      ],
+      "finalReview": {
+        "title": "A1 Comprehensive Review & Assessment",
+        "subtitle": "Review everything from A1 and prepare for A2.",
+        "path": "source/xlsx/A1",
+        "file": "Deutsch_Heimkehr_A1_Final_Review.xlsx",
+        "status": "available"
+      }
+    },
+    {
+  "level": "A2",
+  "title": "A2 Elementary",
+  "subtitle": "Continue building real-world German skills.",
+  "status": "available",
+  "units": [
+    {
+      "unit": "1",
+      "title": "Life in Germany",
+      "subtitle": "Build confidence for everyday situations after A1.",
+      "path": "source/xlsx/A2/unit-1",
+      "lessons": [
+        {
+          "lesson": "1",
+          "title": "Looking for an Apartment",
+          "subtitle": "Learn how to understand apartment listings and identify the features that matter most.",
+          "file": "Deutsch_Heimkehr_A2_U1_L1_v1.0.xlsx",
+          "status": "available"
+        },
+        {
+          "lesson": "2",
+          "title": "Contacting the Landlord",
+          "subtitle": "Write a polite message, introduce yourself, and request an apartment viewing.",
+          "file": "Deutsch_Heimkehr_A2_U1_L2_v1.0.xlsx",
+          "status": "available"
+        }
+      ]
+    }
+  ]
+},
+    {
+      "level": "B1",
+      "title": "B1 Intermediate",
+      "subtitle": "Coming soon",
+      "status": "coming-soon",
+      "units": []
+    },
+    {
+      "level": "B2",
+      "title": "B2 Upper Intermediate",
+      "subtitle": "Coming soon",
+      "status": "coming-soon",
+      "units": []
+    }
+  ]
+}
+
