@@ -761,7 +761,7 @@
 }
 
 
-/* v3.2.2 footer QR cards and project signature */
+/* v3.2.3 footer QR cards and project signature */
 .app-footer {
   display: flex;
   flex-direction: column;
@@ -796,29 +796,30 @@
 }
 
 .footer-qr-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 118px);
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: flex-start;
   justify-content: center;
-  align-items: start;
-  column-gap: 16px;
-  row-gap: 12px;
-  margin: 8px 0 2px;
-  width: 100%;
+  gap: 18px;
+  flex-wrap: nowrap;
+  width: auto;
+  max-width: 100%;
+  margin: 10px auto 4px;
 }
 
 .footer-qr-card {
-  display: grid;
-  grid-template-rows: auto auto;
-  justify-items: center;
+  display: flex !important;
+  flex-direction: column !important;
   align-items: center;
-  gap: 7px;
-  width: 118px;
-  min-width: 118px;
+  justify-content: flex-start;
+  flex: 0 0 122px;
+  width: 122px;
+  min-width: 122px;
+  max-width: 122px;
   padding: 10px 8px;
   border: 1px solid var(--border);
   border-radius: 14px;
   background: rgba(255,255,255,0.045);
-  font-size: 11px;
   line-height: 1.2;
 }
 
@@ -827,10 +828,13 @@
   background: rgba(251,181,43,0.08);
 }
 
+.footer-qr-label,
 .footer-qr-card span {
   display: block;
   width: 100%;
+  margin: 0 0 8px;
   color: var(--muted);
+  font-size: 11px;
   font-weight: 700;
   text-align: center;
 }
@@ -853,9 +857,10 @@
 }
 
 .footer-qr {
-  display: block;
+  display: block !important;
   width: 92px;
   height: 92px;
+  margin: 0 auto;
   padding: 6px;
   border-radius: 10px;
   background: #ffffff;
@@ -864,7 +869,7 @@
 
 @media (max-width: 650px) {
   .footer-qr-grid {
-    display: none;
+    display: none !important;
   }
 }
 
