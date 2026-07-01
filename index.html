@@ -10,8 +10,16 @@
 <body>
   <div class="app">
     <div id="setupHeader" class="header">
-      <h1 id="pageTitle">Deutsch Heimkehr</h1>
-      <p class="subtitle">Learn German one lesson at a time.</p>
+      <div class="header-main">
+        <div>
+          <h1 id="pageTitle">Deutsch Heimkehr</h1>
+          <p class="subtitle">Learn German one lesson at a time.</p>
+        </div>
+        <div class="header-actions">
+          <button id="aboutBtn" class="header-link-btn" type="button">ℹ️ About</button>
+          <button id="supportBtn" class="support-btn" type="button">❤️ Keep Deutsch Heimkehr Free</button>
+        </div>
+      </div>
 
     </div>
 
@@ -20,8 +28,16 @@
         <button id="courseHomeBtn" class="course-home-btn" type="button">🏠 Course</button>
         <div id="currentLessonLabel" class="current-lesson-label"></div>
       </div>
-      <h1 id="quizHeaderTitle">Deutsch Heimkehr</h1>
-      <p class="subtitle">Learn German one lesson at a time.</p>
+      <div class="header-main">
+        <div>
+          <h1 id="quizHeaderTitle">Deutsch Heimkehr</h1>
+          <p class="subtitle">Learn German one lesson at a time.</p>
+        </div>
+        <div class="header-actions">
+          <button id="aboutBtnQuiz" class="header-link-btn" type="button">ℹ️ About</button>
+          <button id="supportBtnQuiz" class="support-btn" type="button">❤️ Keep Deutsch Heimkehr Free</button>
+        </div>
+      </div>
     </div>
 
     <div class="app-shell">
@@ -76,6 +92,17 @@
               <button id="quiz25Btn">Practice 25 Questions</button>
               <button id="quizAllBtn">Start Knowledge Check</button>
             </div>
+          </div>
+        </div>
+
+
+        <div id="aboutPanel" class="panel hidden">
+          <div class="about-toolbar">
+            <button id="aboutBackBtn" class="secondary" type="button">← Back to Course</button>
+          </div>
+          <div id="aboutContent" class="about-content">
+            <h2>About Deutsch Heimkehr</h2>
+            <p class="subtitle">Loading About content...</p>
           </div>
         </div>
 
@@ -154,7 +181,18 @@
       </aside>
     </div>
 
-    <footer class="app-footer">Deutsch Heimkehr • v3.2.0</footer>
+    <footer class="app-footer">Deutsch Heimkehr • v3.2.0 • Practical German for Everyday Life</footer>
+  </div>
+
+  <div id="supportModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="supportModalTitle">
+    <div class="modal-card">
+      <button id="supportCloseBtn" class="modal-close" type="button" aria-label="Close support window">×</button>
+      <h2 id="supportModalTitle">❤️ Keep Deutsch Heimkehr Free</h2>
+      <p>Deutsch Heimkehr is offered free of charge to help learners prepare for practical, everyday life in Germany.</p>
+      <p>If the course has been helpful, an optional donation helps support new lessons, app improvements, hosting, and future learning resources.</p>
+      <a id="supportPaypalLink" class="paypal-link" href="https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID" target="_blank" rel="noopener noreferrer">Donate with PayPal</a>
+      <p class="small">Vielen Dank for helping keep Deutsch Heimkehr free for learners around the world.</p>
+    </div>
   </div>
 
 <script src="js/app.js"></script>
