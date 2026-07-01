@@ -1,0 +1,44 @@
+{
+  "title": "About Deutsch Heimkehr",
+  "subtitle": "Practical German for Everyday Life",
+  "intro": "Deutsch Heimkehr was created for learners who want more than vocabulary lists and grammar exercises. The goal is to help learners communicate with confidence in the situations they may encounter while living, working, studying, or traveling in Germany.",
+  "sections": [
+    {
+      "heading": "Our Mission",
+      "body": "Deutsch Heimkehr teaches German for everyday life in Germany. The course follows CEFR progression, but the focus remains practical communication: speaking with neighbors, shopping for food, making appointments, understanding official situations, and building confidence step by step."
+    },
+    {
+      "heading": "Why Deutsch Heimkehr?",
+      "body": "Many German courses are designed around passing CEFR exams. Those exams are valuable and provide an internationally recognized framework for measuring progress, but they are not the ultimate goal for every learner. Deutsch Heimkehr uses the CEFR levels as a roadmap while keeping everyday communication as the destination."
+    },
+    {
+      "heading": "Teaching Philosophy",
+      "cards": [
+        "Practical German for everyday life",
+        "Real-world dialogues and situations",
+        "Clear vocabulary with useful context",
+        "Grammar explained through communication",
+        "Step-by-step CEFR-aligned progression",
+        "Free and accessible learning"
+      ]
+    },
+    {
+      "heading": "Course Roadmap",
+      "roadmap": [
+        { "level": "A1", "status": "Complete" },
+        { "level": "A2", "status": "In Development" },
+        { "level": "B1", "status": "Planned" },
+        { "level": "B2", "status": "Planned" },
+        { "level": "C1", "status": "Future" },
+        { "level": "C2", "status": "Future" }
+      ]
+    },
+    {
+      "heading": "Keep Deutsch Heimkehr Free",
+      "body": "Deutsch Heimkehr is offered free of charge because language learning should be accessible. Optional support helps fund new lessons, app improvements, hosting, maintenance, and future learning resources.",
+      "support": true
+    }
+  ],
+  "version": "3.2.0",
+  "updated": "July 2026"
+}
