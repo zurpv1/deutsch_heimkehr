@@ -15,7 +15,7 @@ let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogu
 let dynamicLessonSections = null;
 
 const APP_NAME = "Deutsch Heimkehr";
-const APP_VERSION = "v3.2.7";
+const APP_VERSION = "v3.2.8";
 
 function setAppChromeTitle(){
   if(pageTitle) pageTitle.textContent = APP_NAME;
@@ -108,14 +108,10 @@ const supportModal = document.getElementById("supportModal");
 const supportCloseBtn = document.getElementById("supportCloseBtn");
 const supportPaypalLink = document.getElementById("supportPaypalLink");
 
-const quiz10Btn = document.getElementById("quiz10Btn");
-const quiz25Btn = document.getElementById("quiz25Btn");
-const quizAllBtn = document.getElementById("quizAllBtn");
-const beginLessonBtn = document.getElementById("beginLessonBtn");
-if(quiz10Btn) quiz10Btn.addEventListener("click", () => startQuiz(10));
-if(quiz25Btn) quiz25Btn.addEventListener("click", () => startQuiz(25));
-if(quizAllBtn) quizAllBtn.addEventListener("click", () => startQuiz(allQuestions.length));
-if(beginLessonBtn) beginLessonBtn.addEventListener("click", beginLessonFlow);
+document.getElementById("quiz10Btn").addEventListener("click", () => startQuiz(10));
+document.getElementById("quiz25Btn").addEventListener("click", () => startQuiz(25));
+document.getElementById("quizAllBtn").addEventListener("click", () => startQuiz(allQuestions.length));
+document.getElementById("beginLessonBtn").addEventListener("click", beginLessonFlow);
 if(chooseFolderVisualBtn && lessonFolderInput){
   chooseFolderVisualBtn.addEventListener("click", () => lessonFolderInput.click());
   lessonFolderInput.addEventListener("change", buildLessonLibraryFromFolder);
@@ -310,7 +306,7 @@ function loadQuestionsFromRows(rows){
   if(allQuestions.length === 0) throw new Error("No valid questions found.");
   loadStatus.textContent = `Opened ${allQuestions.length} questions from ${workbookFileName}.`;
   if(questionCountText) questionCountText.textContent = `${allQuestions.length} practice questions are ready.`;
-  // Ready-to-Begin panel removed in v3.2.7; selecting a workbook now opens the lesson directly.
+  if(quizStartArea) quizStartArea.classList.add("hidden");
 }
 
 function normalizeLoadedQuestion(q){
@@ -374,7 +370,6 @@ if(loadBtn){ loadBtn.addEventListener("click", async () => {
     loadStatus.textContent = "Opening lesson workbook...";
     const buffer = await file.arrayBuffer();
     await parseWorkbook(buffer);
-    beginLessonFlow();
   }catch(err){
     console.error(err);
     loadStatus.textContent = "There was a problem reading the lesson workbook. Make sure it has a Questions sheet.";
@@ -979,7 +974,7 @@ async function loadLessonFromLibrary(index){
 
     await parseWorkbook(buffer);
     loadStatus.textContent = `Selected lesson: ${entry.summary?.title || workbookFileName}`;
-    beginLessonFlow();
+    if(quizStartArea) quizStartArea.classList.add("hidden");
   }catch(e){
     console.error(e);
     loadStatus.textContent = "There was a problem opening that lesson workbook.";
@@ -992,8 +987,7 @@ function getCurrentLessonDisplayName(){
   if(currentLessonSummary){
     const parts = [];
     if(currentLessonSummary.level) parts.push(currentLessonSummary.level);
-    if(currentLessonSummary.unit && currentLessonSummary.unit !== "final") parts.push(`Unit ${currentLessonSummary.unit}`);
-    if(currentLessonSummary.unit === "final") parts.push("Final Review");
+    if(currentLessonSummary.unit) parts.push(`Unit ${currentLessonSummary.unit}`);
     return parts.join(" • ");
   }
   return "";
@@ -1006,8 +1000,7 @@ function updateCourseHeader(){
 }
 
 function showCourseHome(){
-  if(quizStartArea) quizStartArea.classList.add('hidden');
-
+  if(quizStartArea) quizStartArea.classList.add("hidden");
   dynamicLessonSections = null;
   quizPanel.classList.add("hidden");
   lessonPanel.classList.add("hidden");
