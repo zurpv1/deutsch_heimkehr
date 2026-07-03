@@ -479,13 +479,14 @@ async function loadCourseManifest(){
   lessonLibrary = [];
   selectedLibraryIndex = -1;
   lessonLibraryGrid.innerHTML = "";
-  libraryStatus.textContent = "Loading course library…";
+  libraryStatus.textContent = "Loading course…";
 
   try{
     const response = await fetch("source/course.json", { cache: "no-store" });
     if(!response.ok) throw new Error("source/course.json was not found.");
 
     courseManifest = await response.json();
+    const items = [];
 
     (courseManifest.courses || []).forEach(course => {
       (course.units || []).forEach(unit => {
@@ -494,33 +495,16 @@ async function loadCourseManifest(){
           const lessonObj = typeof lesson === "string" ? { file: lesson } : (lesson || {});
           const fileName = lessonObj.file || lessonObj.fileName || "";
           if(!fileName || lessonObj.status === "coming-soon") return;
-
-          const lessonNumber = String(
-            lessonObj.lesson ||
-            lessonObj.lessonNumber ||
-            inferFromFilename(fileName, "L") ||
-            ""
-          );
-
-          const summary = {
+          items.push({
             level: lessonObj.level || course.level || "",
             unit: String(lessonObj.unit || unit.unit || ""),
-            lesson: lessonNumber,
-            title: lessonObj.title || (lessonNumber === "review" ? `Unit ${unit.unit || ""} Review` : `Lesson ${lessonNumber}`),
-            subtitle: lessonObj.subtitle || lessonObj.description || "",
+            lessonNumber: lessonObj.lesson || lessonObj.lessonNumber || "",
             unitTitle: unit.title || "",
-            estimated: lessonObj.estimated || lessonObj.estimatedTime || "",
-            grammar: lessonObj.grammar || lessonObj.grammarFocus || "",
-            questions: Number(lessonObj.questions || 0),
-            vocab: Number(lessonObj.vocab || lessonObj.vocabulary || 0),
-            fileName
-          };
-
-          lessonLibrary.push({
-            url: lessonObj.path || (unitPath ? `${unitPath}/${fileName}` : fileName),
+            title: lessonObj.title || "",
+            subtitle: lessonObj.subtitle || lessonObj.description || "",
             fileName,
-            file: { name: fileName, lastModified: Date.now() },
-            summary
+            url: lessonObj.path || (unitPath ? `${unitPath}/${fileName}` : fileName),
+            isFinalReview: false
           });
         });
       });
@@ -529,33 +513,54 @@ async function loadCourseManifest(){
       if(review && review.status !== "coming-soon"){
         const fileName = review.file || review.fileName || "";
         if(fileName){
-          const summary = {
+          items.push({
             level: course.level || "",
             unit: "final",
-            lesson: "final",
+            lessonNumber: "final",
             unitTitle: "Comprehensive Review",
             title: review.title || `${course.level || ""} Comprehensive Review`,
             subtitle: review.subtitle || "",
-            estimated: review.estimated || review.estimatedTime || "",
-            grammar: review.grammar || review.grammarFocus || "",
-            questions: Number(review.questions || 0),
-            vocab: Number(review.vocab || review.vocabulary || 0),
             fileName,
-            isFinalReview: true
-          };
-
-          lessonLibrary.push({
             url: review.path ? `${review.path}/${fileName}` : fileName,
-            fileName,
-            file: { name: fileName, lastModified: Date.now() },
-            summary
+            isFinalReview: true
           });
         }
       }
     });
 
+    if(items.length){
+      libraryStatus.textContent = `Loading ${items.length} workbook(s)...`;
+    }
+
+    for(const item of items){
+      try{
+        const lessonResponse = await fetch(item.url, { cache: "no-store" });
+        if(!lessonResponse.ok) throw new Error(`Could not download ${item.url}`);
+        const buffer = await lessonResponse.arrayBuffer();
+        const pseudoFile = { name: item.fileName || item.url.split("/").pop(), lastModified: Date.now() };
+        const summary = await readWorkbookSummary(buffer.slice(0), pseudoFile);
+
+        if(item.level) summary.level = item.level;
+        if(item.unit) summary.unit = item.unit;
+        if(item.lessonNumber) summary.lesson = String(item.lessonNumber);
+        if(item.title) summary.title = item.title;
+        if(item.subtitle) summary.subtitle = item.subtitle;
+        if(item.unitTitle) summary.unitTitle = item.unitTitle;
+        if(item.isFinalReview) summary.isFinalReview = true;
+
+        lessonLibrary.push({
+          url: item.url,
+          fileName: pseudoFile.name,
+          file: pseudoFile,
+          buffer,
+          summary
+        });
+      }catch(lessonError){
+        console.warn("Skipping unavailable workbook:", item.url, lessonError);
+      }
+    }
+
     lessonLibrary.sort((a,b) => naturalLessonSort(a.summary, b.summary));
-    libraryStatus.textContent = "Course library loaded. Choose a level to begin.";
     renderLessonLibrary();
   }catch(err){
     console.warn("Could not load course manifest.", err);
@@ -925,7 +930,7 @@ function renderLessonsForUnit(level, unit){
       <div class="lesson-card-title">${escapeHtml(displayTitle)}</div>
       <div class="lesson-card-meta">${escapeHtml(metaParts.join(" • "))}</div>
       ${displaySubtitle ? `<div class="lesson-card-desc">${escapeHtml(displaySubtitle)}</div>` : ""}
-      ${isAvailable ? `<div class="lesson-card-meta">${escapeHtml([s.vocab ? s.vocab + " vocabulary" : "", s.questions ? s.questions + " questions" : ""].filter(Boolean).join(" • ") || "Workbook loads when opened")}</div>` : '<div class="coming-soon-badge">Coming soon</div>'}
+      ${isAvailable ? `<div class="lesson-card-meta">${escapeHtml([s.vocab ? s.vocab + " vocabulary" : "", s.questions ? s.questions + " questions" : ""].filter(Boolean).join(" • "))}</div>` : '<div class="coming-soon-badge">Coming soon</div>'}
       ${isAvailable ? progressBadgeFor(s) : ""}
       <div class="lesson-card-file">${isAvailable ? "Click to begin this lesson." : "This lesson workbook has not been added yet."}</div>
     `;
@@ -983,9 +988,12 @@ function getCurrentLessonDisplayName(){
     const parts = [];
     if(currentLessonSummary.level) parts.push(currentLessonSummary.level);
     if(currentLessonSummary.unit) parts.push(`Unit ${currentLessonSummary.unit}`);
-    return parts.join(" • ");
+    if(currentLessonSummary.lesson) parts.push(`Lesson ${currentLessonSummary.lesson}`);
+    const prefix = parts.join(" • ");
+    const title = stripLessonVersionTitle(currentLessonSummary.title || "") || stripLessonVersionTitle(workbookFileName || "") || "";
+    return prefix ? `${prefix} - ${title}` : title;
   }
-  return "";
+  return workbookFileName || "";
 }
 
 function updateCourseHeader(){
@@ -995,6 +1003,8 @@ function updateCourseHeader(){
 }
 
 function showCourseHome(){
+  quizStartArea.classList.add('hidden');
+
   dynamicLessonSections = null;
   quizPanel.classList.add("hidden");
   lessonPanel.classList.add("hidden");
