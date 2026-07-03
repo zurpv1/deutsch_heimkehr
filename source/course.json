@@ -360,6 +360,56 @@
               "status": "available"
             }
           ]
+        },
+        {
+          "unit": "3",
+          "title": "Work & Daily Life",
+          "subtitle": "Look for work, handle workplace situations, use public transportation, visit the doctor, and manage daily routines and appointments.",
+          "path": "source/xlsx/A2/unit-3",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Looking for a Job",
+              "subtitle": "Search for jobs, understand postings, describe experience, and prepare a simple application.",
+              "file": "Deutsch_Heimkehr_A2_U3_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "At Work",
+              "subtitle": "Understand workplace routines, tasks, polite requests, and everyday conversations with coworkers.",
+              "file": "Deutsch_Heimkehr_A2_U3_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Using Public Transportation",
+              "subtitle": "Plan routes, understand schedules, ask for help, and handle delays or connections.",
+              "file": "Deutsch_Heimkehr_A2_U3_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "At the Doctor",
+              "subtitle": "Describe symptoms, make an appointment, understand medical advice, and visit the pharmacy.",
+              "file": "Deutsch_Heimkehr_A2_U3_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Daily Routines & Appointments",
+              "subtitle": "Describe routines, manage a calendar, make plans, and reschedule appointments politely.",
+              "file": "Deutsch_Heimkehr_A2_U3_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 3 Review",
+              "subtitle": "Review job searching, workplace communication, public transportation, healthcare, daily routines, and appointments.",
+              "file": "Deutsch_Heimkehr_A2_U3_Review_v1.0.xlsx",
+              "status": "available"
+            }
+          ]
         }
       ]
     },
