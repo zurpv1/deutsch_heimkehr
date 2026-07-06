@@ -15,7 +15,7 @@ let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogu
 let dynamicLessonSections = null;
 
 const APP_NAME = "Deutsch Heimkehr";
-const APP_VERSION = "v3.2.8";
+const APP_VERSION = "v3.2.9";
 
 function setAppChromeTitle(){
   if(pageTitle) pageTitle.textContent = APP_NAME;
@@ -528,36 +528,32 @@ async function loadCourseManifest(){
       }
     });
 
-    if(items.length){
-      libraryStatus.textContent = `Loading ${items.length} workbook(s)...`;
-    }
-
+    // v3.2.9: Lazy-load workbooks.
+    // Build the course library from source/course.json only. Do not download
+    // every .xlsx file on startup; fetch the selected workbook only when the
+    // learner clicks a lesson or review tile.
     for(const item of items){
-      try{
-        const lessonResponse = await fetch(item.url, { cache: "no-store" });
-        if(!lessonResponse.ok) throw new Error(`Could not download ${item.url}`);
-        const buffer = await lessonResponse.arrayBuffer();
-        const pseudoFile = { name: item.fileName || item.url.split("/").pop(), lastModified: Date.now() };
-        const summary = await readWorkbookSummary(buffer.slice(0), pseudoFile);
+      const pseudoFile = { name: item.fileName || item.url.split("/").pop(), lastModified: Date.now() };
+      const summary = {
+        title: item.title || item.fileName || "Lesson",
+        subtitle: item.subtitle || "",
+        level: item.level || "",
+        unit: item.unit || "",
+        lesson: item.lessonNumber ? String(item.lessonNumber) : "",
+        unitTitle: item.unitTitle || "",
+        fileName: item.fileName || pseudoFile.name,
+        isFinalReview: !!item.isFinalReview,
+        vocab: "",
+        questions: ""
+      };
 
-        if(item.level) summary.level = item.level;
-        if(item.unit) summary.unit = item.unit;
-        if(item.lessonNumber) summary.lesson = String(item.lessonNumber);
-        if(item.title) summary.title = item.title;
-        if(item.subtitle) summary.subtitle = item.subtitle;
-        if(item.unitTitle) summary.unitTitle = item.unitTitle;
-        if(item.isFinalReview) summary.isFinalReview = true;
-
-        lessonLibrary.push({
-          url: item.url,
-          fileName: pseudoFile.name,
-          file: pseudoFile,
-          buffer,
-          summary
-        });
-      }catch(lessonError){
-        console.warn("Skipping unavailable workbook:", item.url, lessonError);
-      }
+      lessonLibrary.push({
+        url: item.url,
+        fileName: pseudoFile.name,
+        file: pseudoFile,
+        buffer: null,
+        summary
+      });
     }
 
     lessonLibrary.sort((a,b) => naturalLessonSort(a.summary, b.summary));
