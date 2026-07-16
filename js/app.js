@@ -140,6 +140,11 @@ function textContent(node){ return node ? node.textContent : ""; }
 function nodesByLocalName(parent, localName){ return Array.from(parent.getElementsByTagName("*")).filter(n => n.localName === localName); }
 function firstNodeByLocalName(parent, localName){ return nodesByLocalName(parent, localName)[0] || null; }
 function attr(node, name){ return node ? node.getAttribute(name) : null; }
+function attrByLocalName(node, localName){
+  if(!node || !node.attributes) return "";
+  const match = Array.from(node.attributes).find(a => a.localName === localName);
+  return match ? match.value : "";
+}
 
 function insertAtCursor(input, text){
   const start = input.selectionStart ?? input.value.length;
@@ -207,20 +212,24 @@ async function parseWorkbook(arrayBuffer){
   });
 
   const relationshipNamespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => {
-    // Chrome's DOMParser does not always return namespaced attributes through
-    // getAttribute("r:id"). Read the relationship ID by namespace first, then
-    // fall back to the literal/prefix-independent attribute forms.
+  const sheets = nodesByLocalName(workbookXml, "sheet").map((sheetNode, sheetIndex) => {
+    // Relationship attributes can be exposed differently by different XML
+    // parsers. Resolve the value without depending on the original prefix.
     const relationshipId =
-      s.getAttributeNS?.(relationshipNamespace, "id") ||
-      attr(s, "r:id") ||
-      Array.from(s.attributes || []).find(a => a.localName === "id" && a.namespaceURI === relationshipNamespace)?.value ||
-      attr(s, "id") ||
+      sheetNode.getAttributeNS?.(relationshipNamespace, "id") ||
+      attr(sheetNode, "r:id") ||
+      attrByLocalName(sheetNode, "id") ||
       "";
 
+    // Normal workbooks resolve through workbook.xml.rels. The worksheet-order
+    // fallback keeps standards-compliant workbooks usable in browsers that do
+    // not expose the namespaced r:id attribute as expected.
+    const fallbackPath = `xl/worksheets/sheet${sheetIndex + 1}.xml`;
+
     return {
-      name: attr(s, "name") || "",
-      id: relationshipId
+      name: attr(sheetNode, "name") || "",
+      id: relationshipId,
+      path: relMap[relationshipId] || (workbookZip.file(fallbackPath) ? fallbackPath : "")
     };
   });
   const sharedStrings = await loadSharedStrings(parser);
@@ -234,7 +243,7 @@ async function parseWorkbook(arrayBuffer){
   for(const sheetInfo of sheets){
     const originalName = String(sheetInfo.name || "").trim();
     const lower = normalize(originalName);
-    const sheetPath = relMap[sheetInfo.id];
+    const sheetPath = sheetInfo.path;
     if(!originalName || !sheetPath || hiddenSheetNames.has(lower)) continue;
 
     const displayName = lower === "mission" ? "Lesson" : originalName;
@@ -246,12 +255,16 @@ async function parseWorkbook(arrayBuffer){
     throw new Error("No readable content worksheets were found in this workbook.");
   }
 
-  if(qSheet && relMap[qSheet.id]){
-    const questionRows = await readSheetRows(parser, relMap[qSheet.id], sharedStrings);
+  if(qSheet && qSheet.path){
+    const questionRows = await readSheetRows(parser, qSheet.path, sharedStrings);
     loadQuestionsFromRows(questionRows);
   } else {
     allQuestions = [];
     if(questionCountText) questionCountText.textContent = "No interactive Knowledge Check is available for this workbook.";
+  }
+
+  if(dynamicLessonSections.length === 0){
+    throw new Error("Workbook sheets were found, but no readable content sheets could be resolved.");
   }
 
   historical = [];
@@ -675,7 +688,7 @@ async function readWorkbookSummary(arrayBuffer, file){
     relMap[id] = target.startsWith("xl/") ? target : "xl/" + target;
   });
 
-  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({ name: attr(s,"name") || "", id: attr(s,"r:id") || attr(s,"id") }));
+  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({ name: attr(s,"name") || "", id: attr(s,"r:id") || attrByLocalName(s,"id") || "" }));
   const sharedStrings = await loadSharedStringsFromZip(zip, parser);
 
   let lessonRows = [];
