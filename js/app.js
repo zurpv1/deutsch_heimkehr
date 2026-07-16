@@ -16,7 +16,7 @@ let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogu
 let dynamicLessonSections = null;
 
 const APP_NAME = "Deutsch Heimkehr";
-const APP_VERSION_DATA = window.DEUTSCH_HEIMKEHR_VERSION || { version: "3.5.0", build: 350 };
+const APP_VERSION_DATA = window.DEUTSCH_HEIMKEHR_VERSION || { version: "3.5.1", build: 351 };
 const APP_VERSION = `v${APP_VERSION_DATA.version}`;
 const APP_BUILD = APP_VERSION_DATA.build;
 
@@ -206,10 +206,23 @@ async function parseWorkbook(arrayBuffer){
     relMap[id] = target.startsWith("xl/") ? target : "xl/" + target;
   });
 
-  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({
-    name: attr(s, "name") || "",
-    id: attr(s, "r:id") || attr(s, "id")
-  }));
+  const relationshipNamespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => {
+    // Chrome's DOMParser does not always return namespaced attributes through
+    // getAttribute("r:id"). Read the relationship ID by namespace first, then
+    // fall back to the literal/prefix-independent attribute forms.
+    const relationshipId =
+      s.getAttributeNS?.(relationshipNamespace, "id") ||
+      attr(s, "r:id") ||
+      Array.from(s.attributes || []).find(a => a.localName === "id" && a.namespaceURI === relationshipNamespace)?.value ||
+      attr(s, "id") ||
+      "";
+
+    return {
+      name: attr(s, "name") || "",
+      id: relationshipId
+    };
+  });
   const sharedStrings = await loadSharedStrings(parser);
 
   const hiddenSheetNames = new Set(["questions", "results"]);
@@ -227,6 +240,10 @@ async function parseWorkbook(arrayBuffer){
     const displayName = lower === "mission" ? "Lesson" : originalName;
     lessonData[displayName] = await readSheetRows(parser, sheetPath, sharedStrings);
     if(!dynamicLessonSections.includes(displayName)) dynamicLessonSections.push(displayName);
+  }
+
+  if(dynamicLessonSections.length === 0){
+    throw new Error("No readable content worksheets were found in this workbook.");
   }
 
   if(qSheet && relMap[qSheet.id]){
