@@ -16,12 +16,16 @@ let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogu
 let dynamicLessonSections = null;
 
 const APP_NAME = "Deutsch Heimkehr";
-const APP_VERSION = "v3.3.0";
+const APP_VERSION_DATA = window.DEUTSCH_HEIMKEHR_VERSION || { version: "3.4.0", build: 340 };
+const APP_VERSION = `v${APP_VERSION_DATA.version}`;
+const APP_BUILD = APP_VERSION_DATA.build;
 
 function setAppChromeTitle(){
   if(pageTitle) pageTitle.textContent = APP_NAME;
   if(quizHeaderTitle) quizHeaderTitle.textContent = APP_NAME;
   document.title = `${APP_NAME} ${APP_VERSION}`;
+  const footerVersion = document.getElementById("footerVersion");
+  if(footerVersion) footerVersion.textContent = `${APP_NAME} • ${APP_VERSION}`;
 }
 
 function stripLessonVersionTitle(value){
@@ -483,8 +487,8 @@ async function loadCourseManifest(){
   libraryStatus.textContent = "Loading course…";
 
   try{
-    const response = await fetch("source/course.json", { cache: "no-store" });
-    if(!response.ok) throw new Error("source/course.json was not found.");
+    const response = await fetch(`source/config/course.json?build=${encodeURIComponent(APP_BUILD)}`, { cache: "no-store" });
+    if(!response.ok) throw new Error("source/config/course.json was not found.");
 
     courseManifest = await response.json();
     const items = [];
@@ -553,7 +557,7 @@ async function loadCourseManifest(){
     });
 
     // v3.3.0: Lazy-load both course workbooks and practical-guide workbooks.
-    // Build the course library from source/course.json only. Do not download
+    // Build the course library from source/config/course.json only. Do not download
     // every .xlsx file on startup; fetch the selected workbook only when the
     // learner clicks a lesson or review tile.
     for(const item of items){
@@ -1794,7 +1798,7 @@ function renderAboutSection(section){
 async function loadAboutContent(){
   if(!aboutContent) return;
   try{
-    const response = await fetch("source/about.json", { cache: "no-store" });
+    const response = await fetch(`source/about.json?build=${encodeURIComponent(APP_BUILD)}`, { cache: "no-store" });
     if(!response.ok) throw new Error("Could not load About content.");
     const data = await response.json();
     aboutContent.innerHTML = `
@@ -1806,7 +1810,7 @@ async function loadAboutContent(){
       ${(data.sections || []).map(renderAboutSection).join("")}
       <section class="about-section">
         <h3>Version</h3>
-        <p><strong>App Version:</strong> ${escapeHtml(data.version || "3.2.0")}</p>
+        <p><strong>App Version:</strong> ${escapeHtml(APP_VERSION_DATA.version)}</p>
         ${data.updated ? `<p><strong>Last Updated:</strong> ${escapeHtml(data.updated)}</p>` : ""}
       </section>
     `;
