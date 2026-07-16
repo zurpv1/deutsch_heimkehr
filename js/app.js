@@ -16,7 +16,7 @@ let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogu
 let dynamicLessonSections = null;
 
 const APP_NAME = "Deutsch Heimkehr";
-const APP_VERSION_DATA = window.DEUTSCH_HEIMKEHR_VERSION || { version: "3.5.1", build: 351 };
+const APP_VERSION_DATA = window.DEUTSCH_HEIMKEHR_VERSION || { version: "3.4.0", build: 340 };
 const APP_VERSION = `v${APP_VERSION_DATA.version}`;
 const APP_BUILD = APP_VERSION_DATA.build;
 
@@ -140,11 +140,6 @@ function textContent(node){ return node ? node.textContent : ""; }
 function nodesByLocalName(parent, localName){ return Array.from(parent.getElementsByTagName("*")).filter(n => n.localName === localName); }
 function firstNodeByLocalName(parent, localName){ return nodesByLocalName(parent, localName)[0] || null; }
 function attr(node, name){ return node ? node.getAttribute(name) : null; }
-function attrByLocalName(node, localName){
-  if(!node || !node.attributes) return "";
-  const match = Array.from(node.attributes).find(a => a.localName === localName);
-  return match ? match.value : "";
-}
 
 function insertAtCursor(input, text){
   const start = input.selectionStart ?? input.value.length;
@@ -156,44 +151,7 @@ function insertAtCursor(input, text){
 }
 document.querySelectorAll(".key-btn").forEach(btn => btn.addEventListener("click", () => insertAtCursor(fibInput, btn.dataset.symbol || "")));
 
-function resetCurrentContentState(){
-  allQuestions = [];
-  quizQuestions = [];
-  currentIndex = 0;
-  score = 0;
-  results = [];
-  questionStates = [];
-  retryMode = false;
-  retryQuestions = [];
-  retryResults = [];
-  originalResults = [];
-  retryScore = 0;
-  originalQuizQuestions = [];
-  historical = [];
-  selectedQuestionCount = 0;
-  currentResultSaved = false;
-  selectedAnswer = "";
-  answered = false;
-  workbookZip = null;
-  resultsSheetPath = "";
-  lessonData = {};
-  dynamicLessonSections = [];
-  currentLessonSectionIndex = 0;
-
-  if(questionCountText) questionCountText.textContent = "";
-  if(quizStartArea) quizStartArea.classList.add("hidden");
-  if(feedback){ feedback.className = "feedback"; feedback.innerHTML = ""; }
-  if(reviewArea) reviewArea.innerHTML = "";
-  if(saveStatus){ saveStatus.textContent = ""; saveStatus.classList.add("hidden"); }
-  updateDashboard();
-}
-
 async function parseWorkbook(arrayBuffer){
-  // Every workbook starts with a completely clean content and quiz state.
-  // This prevents questions or tabs from a previously opened lesson/guide
-  // from leaking into the newly selected workbook.
-  resetCurrentContentState();
-
   workbookZip = await JSZip.loadAsync(arrayBuffer);
   const parser = new DOMParser();
   const workbookFile = workbookZip.file("xl/workbook.xml");
@@ -211,70 +169,78 @@ async function parseWorkbook(arrayBuffer){
     relMap[id] = target.startsWith("xl/") ? target : "xl/" + target;
   });
 
-  const relationshipNamespace = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-  const sheets = nodesByLocalName(workbookXml, "sheet").map((sheetNode, sheetIndex) => {
-    // Relationship attributes can be exposed differently by different XML
-    // parsers. Resolve the value without depending on the original prefix.
-    const relationshipId =
-      sheetNode.getAttributeNS?.(relationshipNamespace, "id") ||
-      attr(sheetNode, "r:id") ||
-      attrByLocalName(sheetNode, "id") ||
-      "";
-
-    // Normal workbooks resolve through workbook.xml.rels. The worksheet-order
-    // fallback keeps standards-compliant workbooks usable in browsers that do
-    // not expose the namespaced r:id attribute as expected.
-    const fallbackPath = `xl/worksheets/sheet${sheetIndex + 1}.xml`;
-
-    return {
-      name: attr(sheetNode, "name") || "",
-      id: relationshipId,
-      path: relMap[relationshipId] || (workbookZip.file(fallbackPath) ? fallbackPath : "")
-    };
-  });
+  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({ name: attr(s,"name") || "", id: attr(s,"r:id") || attr(s,"id") }));
   const sharedStrings = await loadSharedStrings(parser);
 
-  const hiddenSheetNames = new Set(["questions", "results"]);
-  const qSheet = sheets.find(s => normalize(s.name) === "questions");
+  const isFinalReviewWorkbook =
+    !!(currentLessonSummary && currentLessonSummary.isFinalReview) ||
+    /final[_\s-]*review/i.test(workbookFileName || "");
 
-  // Build the visible navigation directly from the sheets that actually
-  // exist in this workbook. Questions powers Knowledge Check and Results is
-  // internal, so neither is shown as a normal content tab.
-  for(const sheetInfo of sheets){
-    const originalName = String(sheetInfo.name || "").trim();
-    const lower = normalize(originalName);
-    const sheetPath = sheetInfo.path;
-    if(!originalName || !sheetPath || hiddenSheetNames.has(lower)) continue;
+  dynamicLessonSections = null;
+  resultsSheetPath = "";
 
-    const displayName = lower === "mission" ? "Lesson" : originalName;
-    lessonData[displayName] = await readSheetRows(parser, sheetPath, sharedStrings);
-    if(!dynamicLessonSections.includes(displayName)) dynamicLessonSections.push(displayName);
+  if(isFinalReviewWorkbook){
+    lessonData = {};
+    dynamicLessonSections = [];
+
+    const qSheet = sheets.find(s => s.name.toLowerCase() === "questions");
+
+    for(const sheetInfo of sheets){
+      const sheetName = sheetInfo.name || "";
+      const lower = sheetName.toLowerCase();
+      if(!sheetName || !relMap[sheetInfo.id]) continue;
+
+      // Do not display Questions as a normal workbook tab.
+      // It powers the interactive Knowledge Check instead.
+      if(lower === "questions") continue;
+
+      lessonData[sheetName] = await readSheetRows(parser, relMap[sheetInfo.id], sharedStrings);
+      dynamicLessonSections.push(sheetName);
+    }
+
+    if(qSheet && relMap[qSheet.id]){
+      const questionRows = await readSheetRows(parser, relMap[qSheet.id], sharedStrings);
+      loadQuestionsFromRows(questionRows);
+    } else {
+      allQuestions = [];
+      quizTitle = currentLessonSummary?.title || "A1 Comprehensive Review & Assessment";
+      setAppChromeTitle();
+      if(questionCountText) questionCountText.textContent = "No interactive assessment is available for this workbook.";
+      if(quizStartArea) quizStartArea.classList.add("hidden");
+    }
+
+    loadStatus.textContent = `Opened ${workbookFileName}.`;
+    historical = [];
+    updateStats();
+    return;
   }
 
-  if(dynamicLessonSections.length === 0){
-    throw new Error("No readable content worksheets were found in this workbook.");
+  lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
+
+  const qSheet = sheets.find(s => s.name.toLowerCase() === "questions");
+  if(!qSheet) throw new Error("Workbook must contain a Questions sheet.");
+
+  const questionsSheetPath = relMap[qSheet.id];
+
+  const lessonSheet = sheets.find(s => s.name.toLowerCase() === "lesson") || sheets.find(s => s.name.toLowerCase() === "mission");
+  if(lessonSheet && relMap[lessonSheet.id]){
+    lessonData.Lesson = await readSheetRows(parser, relMap[lessonSheet.id], sharedStrings);
+  }
+  for(const section of ["Vocabulary", "Grammar", "Dialogue", "Practice"]){
+    const sheet = sheets.find(s => s.name.toLowerCase() === section.toLowerCase());
+    if(sheet && relMap[sheet.id]){
+      lessonData[section] = await readSheetRows(parser, relMap[sheet.id], sharedStrings);
+    }
   }
 
-  if(qSheet && qSheet.path){
-    const questionRows = await readSheetRows(parser, qSheet.path, sharedStrings);
-    loadQuestionsFromRows(questionRows);
-  } else {
-    allQuestions = [];
-    if(questionCountText) questionCountText.textContent = "No interactive Knowledge Check is available for this workbook.";
-  }
-
-  if(dynamicLessonSections.length === 0){
-    throw new Error("Workbook sheets were found, but no readable content sheets could be resolved.");
-  }
-
+  const questionRows = await readSheetRows(parser, questionsSheetPath, sharedStrings);
+  loadQuestionsFromRows(questionRows);
   historical = [];
   updateStats();
-  loadStatus.textContent = `Opened ${workbookFileName}.`;
 
   if(!currentLessonSummary || currentLessonSummary.title === workbookFileName){
-    const lessonRows = lessonData.Lesson || [];
-    const meta = lessonRowsToMetadata(lessonRows);
-    const heading = (lessonRows[0] && lessonRows[0][1]) ? lessonRows[0][1] : "";
+    const meta = lessonRowsToMetadata(lessonData.Lesson || []);
+    const heading = (lessonData.Lesson && lessonData.Lesson[0] && lessonData.Lesson[0][1]) ? lessonData.Lesson[0][1] : "";
     currentLessonSummary = {
       title: stripLessonVersionTitle(meta.Title || heading || quizTitle) || workbookFileName,
       fileName: workbookFileName,
@@ -688,7 +654,7 @@ async function readWorkbookSummary(arrayBuffer, file){
     relMap[id] = target.startsWith("xl/") ? target : "xl/" + target;
   });
 
-  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({ name: attr(s,"name") || "", id: attr(s,"r:id") || attrByLocalName(s,"id") || "" }));
+  const sheets = nodesByLocalName(workbookXml, "sheet").map(s => ({ name: attr(s,"name") || "", id: attr(s,"r:id") || attr(s,"id") }));
   const sharedStrings = await loadSharedStringsFromZip(zip, parser);
 
   let lessonRows = [];
@@ -1099,50 +1065,36 @@ function renderLessonLibrary(){
   renderLevelLibrary();
 }
 
-async function loadContent(entry, index = -1){
-  if(!entry) throw new Error("Content entry was not found.");
-
-  // Clear the previously loaded workbook before changing the active entry.
-  resetCurrentContentState();
-  selectedLibraryIndex = index;
-  workbookFileName = entry.file?.name || entry.fileName || entry.url || "Content workbook";
-  currentLessonSummary = entry.summary || null;
-  workbookLoadedAt = new Date();
-  workbookLastModified = entry.file?.lastModified ? new Date(entry.file.lastModified) : new Date();
-
-  loadStatus.textContent = "Opening selected content...";
-
-  let buffer;
-  if(entry.buffer){
-    buffer = entry.buffer.slice(0);
-  } else if(entry.url){
-    const response = await fetch(entry.url, { cache: "no-store" });
-    if(!response.ok) throw new Error(`Could not download content: ${entry.url}`);
-    buffer = await response.arrayBuffer();
-    // Keep only the currently selected workbook cached. Clear all others.
-    lessonLibrary.forEach(item => { if(item !== entry) item.buffer = null; });
-    entry.buffer = buffer.slice(0);
-  } else if(entry.file && entry.file.arrayBuffer){
-    buffer = await entry.file.arrayBuffer();
-  } else {
-    throw new Error("Content entry does not contain a file or URL.");
-  }
-
-  await parseWorkbook(buffer);
-  loadStatus.textContent = `Selected content: ${entry.summary?.title || workbookFileName}`;
-  if(quizStartArea) quizStartArea.classList.add("hidden");
-}
-
 async function loadLessonFromLibrary(index){
+  selectedLibraryIndex = index;
   const entry = lessonLibrary[index];
   try{
-    await loadContent(entry, index);
+    workbookFileName = entry.file?.name || entry.fileName || entry.url || "Lesson workbook";
+    currentLessonSummary = entry.summary;
+    workbookLoadedAt = new Date();
+    workbookLastModified = entry.file?.lastModified ? new Date(entry.file.lastModified) : new Date();
+
+    loadStatus.textContent = "Opening selected lesson...";
+    let buffer;
+    if(entry.buffer){
+      buffer = entry.buffer.slice(0);
+    } else if(entry.url){
+      const response = await fetch(entry.url, { cache: "no-store" });
+      if(!response.ok) throw new Error(`Could not download lesson: ${entry.url}`);
+      buffer = await response.arrayBuffer();
+      entry.buffer = buffer.slice(0);
+    } else if(entry.file && entry.file.arrayBuffer){
+      buffer = await entry.file.arrayBuffer();
+    } else {
+      throw new Error("Lesson entry does not contain a file or URL.");
+    }
+
+    await parseWorkbook(buffer);
+    loadStatus.textContent = `Selected lesson: ${entry.summary?.title || workbookFileName}`;
+    if(quizStartArea) quizStartArea.classList.add("hidden");
   }catch(e){
     console.error(e);
-    resetCurrentContentState();
-    currentLessonSummary = null;
-    selectedLibraryIndex = -1;
-    loadStatus.textContent = "There was a problem opening that workbook.";
+    loadStatus.textContent = "There was a problem opening that lesson workbook.";
   }
 }
 
@@ -1425,11 +1377,6 @@ startQuizFromLessonBtn.addEventListener("click", () => startQuiz(allQuestions.le
 
 
 function startQuiz(count){
-  if(!currentLessonSummary || !allQuestions.length){
-    loadStatus.textContent = "Select and open a lesson, review, or guide part before starting a Knowledge Check.";
-    showCourseHome();
-    return;
-  }
   updateCourseHeader();
   const requestedCount = Math.min(count, allQuestions.length);
   selectedQuestionCount = requestedCount;
