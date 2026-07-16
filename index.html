@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Deutsch Heimkehr v3.3.0</title>
+  <title>Deutsch Heimkehr</title>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <link rel="stylesheet" href="css/app.css">
+  <link id="appStylesheet" rel="stylesheet" href="css/app.css">
 </head>
 <body>
   <div class="app">
@@ -182,7 +182,7 @@
     </div>
 
     <footer class="app-footer">
-      <div class="footer-brand">Deutsch Heimkehr • v3.3.0</div>
+      <div id="footerVersion" class="footer-brand">Deutsch Heimkehr</div>
       <div class="footer-tagline">Practical German for Everyday Life</div>
       <a class="footer-site-link" href="https://deutschheimkehr.qzz.io" target="_blank" rel="noopener noreferrer">deutschheimkehr.qzz.io</a>
       <div class="footer-qr-grid" aria-label="Deutsch Heimkehr quick links">
@@ -211,6 +211,31 @@
     </div>
   </div>
 
-<script src="js/app.js?v=340"></script>
+<script>
+(async function bootstrapDeutschHeimkehr(){
+  const fallbackVersion = { version: "3.4.0", build: 340 };
+  let versionData = fallbackVersion;
+
+  try {
+    const response = await fetch("source/config/app-version.json", { cache: "no-store" });
+    if (!response.ok) throw new Error("Version configuration was not found.");
+    versionData = await response.json();
+  } catch (error) {
+    console.warn("Using fallback app version.", error);
+  }
+
+  window.DEUTSCH_HEIMKEHR_VERSION = versionData;
+  document.title = `Deutsch Heimkehr v${versionData.version}`;
+
+  const stylesheet = document.getElementById("appStylesheet");
+  if (stylesheet) stylesheet.href = `css/app.css?build=${encodeURIComponent(versionData.build)}`;
+
+  const appScript = document.createElement("script");
+  appScript.src = `js/app.js?build=${encodeURIComponent(versionData.build)}`;
+  appScript.defer = true;
+  appScript.onerror = () => console.error("Deutsch Heimkehr app.js could not be loaded.");
+  document.body.appendChild(appScript);
+})();
+</script>
 </body>
 </html>
