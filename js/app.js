@@ -16,7 +16,7 @@ let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogu
 let dynamicLessonSections = null;
 
 const APP_NAME = "Deutsch Heimkehr";
-const APP_VERSION_DATA = window.DEUTSCH_HEIMKEHR_VERSION || { version: "3.4.0", build: 340 };
+const APP_VERSION_DATA = window.DEUTSCH_HEIMKEHR_VERSION || { version: "3.4.1", build: 341 };
 const APP_VERSION = `v${APP_VERSION_DATA.version}`;
 const APP_BUILD = APP_VERSION_DATA.build;
 
@@ -215,6 +215,39 @@ async function parseWorkbook(arrayBuffer){
     return;
   }
 
+  const isPracticalGuideWorkbook = currentLessonSummary?.contentType === "guide";
+
+  if(isPracticalGuideWorkbook){
+    lessonData = {};
+    dynamicLessonSections = [];
+
+    const qSheet = sheets.find(s => s.name.toLowerCase() === "questions");
+
+    for(const sheetInfo of sheets){
+      const originalName = String(sheetInfo.name || "").trim();
+      const lower = originalName.toLowerCase();
+      if(!originalName || !relMap[sheetInfo.id]) continue;
+      if(lower === "questions" || lower === "results") continue;
+
+      const displayName = lower === "mission" ? "Lesson" : originalName;
+      lessonData[displayName] = await readSheetRows(parser, relMap[sheetInfo.id], sharedStrings);
+      dynamicLessonSections.push(displayName);
+    }
+
+    if(qSheet && relMap[qSheet.id]){
+      const questionRows = await readSheetRows(parser, relMap[qSheet.id], sharedStrings);
+      loadQuestionsFromRows(questionRows);
+    } else {
+      allQuestions = [];
+      if(questionCountText) questionCountText.textContent = "No interactive knowledge check is available for this workbook.";
+    }
+
+    loadStatus.textContent = `Opened ${workbookFileName}.`;
+    historical = [];
+    updateStats();
+    return;
+  }
+
   lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
 
   const qSheet = sheets.find(s => s.name.toLowerCase() === "questions");
@@ -285,17 +318,18 @@ function loadQuestionsFromRows(rows){
   if(normalize(rows[0][0]) === "title") quizTitle = rows[0][1] || "Deutsch Heimkehr";
   setAppChromeTitle();
 
-  let headerRowIndex = rows.findIndex(r => normalize(r[0]) === "id");
+  let headerRowIndex = rows.findIndex(r => {
+    const first = normalize(r[0]);
+    return first === "id" || first === "questionid" || first === "question id";
+  });
 
-  // Final review support:
-  // Some capstone workbooks use a compact Questions sheet beginning with:
+  // Compact question-bank support:
   // Type | Question | Choice1 | Choice2 | Choice3 | Choice4 | Answer | Explanation
-  // If no ID header exists, accept that format and generate IDs automatically.
   if(headerRowIndex < 0){
     headerRowIndex = rows.findIndex(r => normalize(r[0]) === "type" && normalize(r[1]) === "question");
   }
 
-  if(headerRowIndex < 0) throw new Error("Questions sheet must have either an ID header row or a Type/Question header row.");
+  if(headerRowIndex < 0) throw new Error("Questions sheet must have an ID, QuestionID, or Type/Question header row.");
 
   const headers = rows[headerRowIndex].map(h => String(h || "").trim());
 
@@ -303,7 +337,15 @@ function loadQuestionsFromRows(rows){
     const obj = {};
     headers.forEach((h,i) => obj[h] = row[i] !== undefined && row[i] !== null ? String(row[i]).trim() : "");
 
-    if(!obj.ID) obj.ID = String(rowOffset + 1);
+    if(!obj.ID) obj.ID = obj.QuestionID || obj["Question ID"] || String(rowOffset + 1);
+
+    if(obj.Options && !obj.ChoiceA && !obj.Choice1){
+      const options = String(obj.Options).split("|").map(v => v.trim());
+      obj.ChoiceA = options[0] || "";
+      obj.ChoiceB = options[1] || "";
+      obj.ChoiceC = options[2] || "";
+      obj.ChoiceD = options[3] || "";
+    }
 
     return normalizeLoadedQuestion(obj);
   }).filter(q => q.ID && q.Type && (q.Question || q.Exercise || q.Phrase || q.Instruction || q.Target) && q.Answer !== "");
@@ -671,7 +713,7 @@ async function readWorkbookSummary(arrayBuffer, file){
 
   const metadata = lessonRowsToMetadata(lessonRows);
   const titleFromSheet = questionRows && questionRows[0] && normalize(questionRows[0][0]) === "title" ? questionRows[0][1] : "";
-  const qHeaderIndex = questionRows.findIndex(r => normalize(r[0]) === "id");
+  const qHeaderIndex = questionRows.findIndex(r => ["id", "questionid", "question id"].includes(normalize(r[0])));
   const questionCount = qHeaderIndex >= 0 ? questionRows.slice(qHeaderIndex + 1).filter(r => r[0]).length : 0;
   const vocabCount = vocabRows.length > 1 ? vocabRows.slice(1).filter(r => r.some(Boolean)).length : 0;
 
@@ -1068,6 +1110,16 @@ function renderLessonLibrary(){
 async function loadLessonFromLibrary(index){
   selectedLibraryIndex = index;
   const entry = lessonLibrary[index];
+
+  // Clear the previously loaded workbook state before opening new content.
+  allQuestions = [];
+  quizQuestions = [];
+  questionStates = [];
+  results = [];
+  historical = [];
+  dynamicLessonSections = null;
+  lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
+
   try{
     workbookFileName = entry.file?.name || entry.fileName || entry.url || "Lesson workbook";
     currentLessonSummary = entry.summary;
