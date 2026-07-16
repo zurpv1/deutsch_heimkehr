@@ -1,21 +1,14 @@
-Deutsch Heimkehr v3.2.0
+Deutsch Heimkehr v3.3.0
 
 Upload all files and folders in this package to the GitHub Pages repository root.
 
-This release preserves the existing v3.x version history while adding the cleanup and course-navigation changes.
+Changes in v3.3.0:
+- Adds German Citizenship Application as a Practical Guide tile at the end of the main landing-page grid.
+- Adds Part 1, Part 2, and Part 3 tiles on the guide page.
+- Keeps practical-guide workbooks lazy-loaded; a workbook is downloaded only after its part tile is clicked.
+- Preserves the existing A1/A2/B1/B2 course flow.
 
-Changes in v3.2.0:
-- Uses the Level → Unit → Lesson course flow.
-- Shows A1 as available and A2/B1/B2 as coming soon.
-- Keeps Lesson 1 available and Lessons 2–5 as coming soon placeholders.
-- Removes the Workbook Safety Check workflow.
-- Removes the updated-workbook download/save-results-to-XLSX workflow.
-- Saves learner progress locally in the browser profile instead of writing back to the workbook.
-- Treats the workbook as course content only.
-
-Current structure:
-- index.html
-- css/app.css
-- js/app.js
-- source/course.json
-- source/xlsx/A1/unit-1/Deutsch_Heimkehr_A1_U1_L1_v1.0.xlsx
+Current practical-guide structure:
+- source/xlsx/PracticalGuides/German-Citizenship-Application/German_Citizenship_Application_Part_1.xlsx
+- source/xlsx/PracticalGuides/German-Citizenship-Application/German_Citizenship_Application_Part_2.xlsx
+- source/xlsx/PracticalGuides/German-Citizenship-Application/German_Citizenship_Application_Part_3.xlsx
