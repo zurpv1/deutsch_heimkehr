@@ -427,5 +427,38 @@
       "status": "coming-soon",
       "units": []
     }
+  ],
+  "practicalGuides": [
+    {
+      "id": "german-citizenship-application",
+      "title": "German Citizenship Application",
+      "subtitle": "Practice the German vocabulary and questions used throughout the citizenship application process.",
+      "icon": "🛂",
+      "status": "available",
+      "path": "source/xlsx/PracticalGuides/German-Citizenship-Application",
+      "parts": [
+        {
+          "part": "1",
+          "title": "Part 1",
+          "subtitle": "Work through the first section of the German citizenship application.",
+          "file": "German_Citizenship_Application_Part_1.xlsx",
+          "status": "available"
+        },
+        {
+          "part": "2",
+          "title": "Part 2",
+          "subtitle": "Continue with the second section of the German citizenship application.",
+          "file": "German_Citizenship_Application_Part_2.xlsx",
+          "status": "available"
+        },
+        {
+          "part": "3",
+          "title": "Part 3",
+          "subtitle": "Complete the final section of the German citizenship application.",
+          "file": "German_Citizenship_Application_Part_3.xlsx",
+          "status": "available"
+        }
+      ]
+    }
   ]
 }
