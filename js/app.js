@@ -7,15 +7,16 @@ let selectedAnswer = "", answered = false;
 let lessonLibrary = [];
 let selectedLibraryIndex = -1;
 let currentLessonSummary = null;
-let courseManifest = { courses: [] };
+let courseManifest = { courses: [], practicalGuides: [] };
 let libraryView = "levels";
 let selectedLevel = "";
 let selectedUnit = "";
+let selectedGuideId = "";
 let lessonData = { Lesson: [], Mission: [], Vocabulary: [], Grammar: [], Dialogue: [], Practice: [] };
 let dynamicLessonSections = null;
 
 const APP_NAME = "Deutsch Heimkehr";
-const APP_VERSION = "v3.2.9";
+const APP_VERSION = "v3.3.0";
 
 function setAppChromeTitle(){
   if(pageTitle) pageTitle.textContent = APP_NAME;
@@ -528,7 +529,30 @@ async function loadCourseManifest(){
       }
     });
 
-    // v3.2.9: Lazy-load workbooks.
+    (courseManifest.practicalGuides || []).forEach(guide => {
+      const guidePath = guide.path || "";
+      (guide.parts || []).forEach(part => {
+        const partObj = typeof part === "string" ? { file: part } : (part || {});
+        const fileName = partObj.file || partObj.fileName || "";
+        if(!fileName || partObj.status === "coming-soon") return;
+        items.push({
+          contentType: "guide",
+          guideId: guide.id || guide.title || "guide",
+          guideTitle: guide.title || "Practical Guide",
+          level: "",
+          unit: "",
+          lessonNumber: String(partObj.part || partObj.lesson || ""),
+          unitTitle: guide.title || "Practical Guide",
+          title: partObj.title || `Part ${partObj.part || ""}`.trim(),
+          subtitle: partObj.subtitle || partObj.description || "",
+          fileName,
+          url: partObj.path || (guidePath ? `${guidePath}/${fileName}` : fileName),
+          isFinalReview: false
+        });
+      });
+    });
+
+    // v3.3.0: Lazy-load both course workbooks and practical-guide workbooks.
     // Build the course library from source/course.json only. Do not download
     // every .xlsx file on startup; fetch the selected workbook only when the
     // learner clicks a lesson or review tile.
@@ -543,6 +567,10 @@ async function loadCourseManifest(){
         unitTitle: item.unitTitle || "",
         fileName: item.fileName || pseudoFile.name,
         isFinalReview: !!item.isFinalReview,
+        contentType: item.contentType || "course",
+        guideId: item.guideId || "",
+        guideTitle: item.guideTitle || "",
+        part: item.contentType === "guide" ? String(item.lessonNumber || "") : "",
         vocab: "",
         questions: ""
       };
@@ -597,8 +625,10 @@ async function buildLessonLibraryFromFolder(){
 }
 
 function naturalLessonSort(a,b){
-  const av = [a.level || "", a.isFinalReview ? 999 : Number(a.unit || 0), a.isFinalReview ? 999 : Number(a.lesson || 0), a.title || ""].join("-");
-  const bv = [b.level || "", b.isFinalReview ? 999 : Number(b.unit || 0), b.isFinalReview ? 999 : Number(b.lesson || 0), b.title || ""].join("-");
+  const aType = a.contentType === "guide" ? 1 : 0;
+  const bType = b.contentType === "guide" ? 1 : 0;
+  const av = [aType, a.guideId || a.level || "", a.isFinalReview ? 999 : Number(a.unit || 0), a.isFinalReview ? 999 : Number(a.part || a.lesson || 0), a.title || ""].join("-");
+  const bv = [bType, b.guideId || b.level || "", b.isFinalReview ? 999 : Number(b.unit || 0), b.isFinalReview ? 999 : Number(b.part || b.lesson || 0), b.title || ""].join("-");
   return av.localeCompare(bv, undefined, { numeric:true });
 }
 
@@ -724,6 +754,21 @@ function getCourseByLevel(level){
   return (courseManifest.courses || []).find(c => String(c.level || "") === String(level || ""));
 }
 
+function getGuideById(guideId){
+  return (courseManifest.practicalGuides || []).find(g => String(g.id || "") === String(guideId || ""));
+}
+
+function getGuidePartEntry(guideId, part){
+  return lessonLibrary
+    .map((entry, idx) => ({ entry, idx }))
+    .find(x =>
+      x.entry.summary &&
+      x.entry.summary.contentType === "guide" &&
+      String(x.entry.summary.guideId || "") === String(guideId || "") &&
+      String(x.entry.summary.part || x.entry.summary.lesson || "") === String(part || "")
+    ) || null;
+}
+
 function getAvailableLessonEntry(level, unit, lesson){
   return lessonLibrary
     .map((entry, idx) => ({ entry, idx }))
@@ -790,6 +835,7 @@ function renderLevelLibrary(){
   libraryView = "levels";
   selectedLevel = "";
   selectedUnit = "";
+  selectedGuideId = "";
   selectedLibraryIndex = -1;
   lessonLibraryGrid.innerHTML = "";
   backToUnitsBtn.classList.add("hidden");
@@ -818,6 +864,77 @@ function renderLevelLibrary(){
     `;
     if(!comingSoon){
       card.addEventListener("click", () => renderUnitLibrary(course.level));
+    }
+    lessonLibraryGrid.appendChild(card);
+  });
+
+  const guides = courseManifest.practicalGuides || [];
+  guides.forEach(guide => {
+    const parts = guide.parts || [];
+    const availableParts = parts.filter(part => {
+      const partObj = typeof part === "string" ? { file: part } : (part || {});
+      return partObj.status !== "coming-soon" && !!getGuidePartEntry(guide.id, partObj.part || partObj.lesson);
+    }).length;
+    const comingSoon = guide.status === "coming-soon" || !parts.length;
+    const card = document.createElement("div");
+    card.className = "lesson-library-card level-card" + (comingSoon ? " disabled" : "");
+    card.title = comingSoon ? "Coming soon." : "Click to view guide parts.";
+    card.innerHTML = `
+      <div class="unit-card-title">${escapeHtml((guide.icon || "🛂") + " " + (guide.title || "Practical Guide"))}</div>
+      <div class="lesson-card-desc">${escapeHtml(guide.subtitle || "")}</div>
+      <div class="unit-card-desc">${comingSoon ? "Coming soon" : `${availableParts} available part${availableParts === 1 ? "" : "s"}`}</div>
+      <div class="lesson-card-file">${comingSoon ? "Not available yet." : "Click to open this practical guide."}</div>
+    `;
+    if(!comingSoon){
+      card.addEventListener("click", () => renderGuideLibrary(guide.id));
+    }
+    lessonLibraryGrid.appendChild(card);
+  });
+}
+
+function renderGuideLibrary(guideId){
+  libraryView = "guide-parts";
+  selectedLevel = "";
+  selectedUnit = "";
+  selectedGuideId = guideId || "";
+  selectedLibraryIndex = -1;
+  lessonLibraryGrid.innerHTML = "";
+  backToUnitsBtn.classList.remove("hidden");
+
+  const guide = getGuideById(selectedGuideId);
+  if(!guide){
+    libraryStatus.textContent = "This practical guide could not be found.";
+    libraryBreadcrumb.textContent = "Practical Guides";
+    return;
+  }
+
+  const parts = guide.parts || [];
+  libraryStatus.textContent = `${parts.length} part${parts.length === 1 ? "" : "s"} available. Choose a part.`;
+  libraryBreadcrumb.textContent = `${guide.icon || "🛂"} ${guide.title || "Practical Guide"}`;
+
+  parts.forEach(part => {
+    const partObj = typeof part === "string" ? { file: part } : (part || {});
+    const partNumber = String(partObj.part || partObj.lesson || "");
+    const available = getGuidePartEntry(selectedGuideId, partNumber);
+    const entry = available?.entry;
+    const idx = available?.idx;
+    const isAvailable = !!available && partObj.status !== "coming-soon";
+    const s = entry?.summary || {};
+    const card = document.createElement("div");
+    card.className = "lesson-library-card" + (!isAvailable ? " disabled" : "");
+    card.title = isAvailable ? "Click to open this part." : "Coming soon.";
+    card.innerHTML = `
+      <div class="lesson-card-title">${escapeHtml(partObj.title || `Part ${partNumber}`)}</div>
+      <div class="lesson-card-meta">${escapeHtml(guide.title || "Practical Guide")}</div>
+      ${partObj.subtitle ? `<div class="lesson-card-desc">${escapeHtml(partObj.subtitle)}</div>` : ""}
+      ${isAvailable ? progressBadgeFor(s) : '<div class="coming-soon-badge">Coming soon</div>'}
+      <div class="lesson-card-file">${isAvailable ? "Click to begin this part." : "This workbook has not been added yet."}</div>
+    `;
+    if(isAvailable){
+      card.addEventListener("click", async () => {
+        await loadLessonFromLibrary(idx);
+        beginLessonFlow();
+      });
     }
     lessonLibraryGrid.appendChild(card);
   });
@@ -981,6 +1098,12 @@ async function loadLessonFromLibrary(index){
 
 function getCurrentLessonDisplayName(){
   if(currentLessonSummary){
+    if(currentLessonSummary.contentType === "guide"){
+      const parts = [];
+      if(currentLessonSummary.guideTitle) parts.push(currentLessonSummary.guideTitle);
+      if(currentLessonSummary.part) parts.push(`Part ${currentLessonSummary.part}`);
+      return parts.join(" • ");
+    }
     const parts = [];
     if(currentLessonSummary.level) parts.push(currentLessonSummary.level);
     if(currentLessonSummary.unit) parts.push(`Unit ${currentLessonSummary.unit}`);
