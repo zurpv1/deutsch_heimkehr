@@ -410,6 +410,56 @@
               "status": "available"
             }
           ]
+        },
+        {
+          "unit": "4",
+          "title": "Housing & Apartment Life",
+          "subtitle": "Find an apartment, understand the lease and handover, move in, manage building life, and handle household emergencies.",
+          "path": "source/xlsx/A2/unit-4",
+          "lessons": [
+            {
+              "lesson": "1",
+              "title": "Finding an Apartment",
+              "subtitle": "Read apartment listings, compare costs and features, contact a landlord, and arrange a viewing.",
+              "file": "Deutsch_Heimkehr_A2_U4_L1_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "2",
+              "title": "Rental Agreement & Apartment Handover",
+              "subtitle": "Understand the lease, deposit, house rules, handover report, meter readings, and keys.",
+              "file": "Deutsch_Heimkehr_A2_U4_L2_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "3",
+              "title": "Moving & Setting Up Utilities",
+              "subtitle": "Plan the move, register electricity and internet, arrange deliveries, and set up the apartment.",
+              "file": "Deutsch_Heimkehr_A2_U4_L3_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "4",
+              "title": "Apartment Building Life",
+              "subtitle": "Follow house rules, communicate with neighbors, sort waste, use shared spaces, and report repairs.",
+              "file": "Deutsch_Heimkehr_A2_U4_L4_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "5",
+              "title": "Household Emergencies & Insurance",
+              "subtitle": "Respond to household emergencies, report damage, use emergency numbers, and understand basic insurance.",
+              "file": "Deutsch_Heimkehr_A2_U4_L5_v1.0.xlsx",
+              "status": "available"
+            },
+            {
+              "lesson": "review",
+              "title": "Unit 4 Review",
+              "subtitle": "Review apartment searching, rental agreements, moving, utilities, building life, repairs, safety, and insurance.",
+              "file": "Deutsch_Heimkehr_A2_U4_Review_v1.0.xlsx",
+              "status": "available"
+            }
+          ]
         }
       ]
     },
